@@ -6,7 +6,7 @@ from astroNN.models import load_folder
 from astroNN.gaia import extinction_correction, fakemag_to_pc, fakemag_to_parallax
 
 from config import allstar_path, contspac_file_name, gaia_rowmatch_f, astronn_chem_model, astronn_dist_model, \
-    astronn_chem_f, astronn_dist_f
+    astronn_age_model, astronn_chem_f, astronn_dist_f
 
 allstar_data = fits.getdata(allstar_path)
 
@@ -140,3 +140,7 @@ t = fits.BinTableHDU.from_columns(columns_list)
 t.writeto(astronn_dist_f)
 
 # ====================================== Ages ====================================== #
+
+net = load_folder(astronn_age_model)
+
+pred, pred_error = net.test(all_spec)

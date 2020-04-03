@@ -8,12 +8,12 @@ astroNN DR16 VAC: https://www.sdss.org/dr16/data_access/value-added-catalogs/?va
 Requirement
 ---------------
 
-``python>=3.6``, ``numpy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``
+``python>=3.6``, ``numpy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``, ``pyyaml``
 
 Scripts
 ---------
 
-Please review the configuration store in the following following file before running any script.
+Please review the configurations stored in the following following files before running any script.
 
 -   | `config.py`_
     | Global configuration for the scripts
@@ -23,7 +23,7 @@ Please review the configuration store in the following following file before run
 .. _config.py: config.py
 .. _gaia_credential: gaia_credential
 
-Please run the script in order
+Please run the scripts in ASCENDING ORDER
 
 -   | `1_continuum_norm.py`_
     | This script continuum normalizing all the APOGEE spectra and save them to a single fits
@@ -34,7 +34,7 @@ Please run the script in order
 -   | `4_orbital_parameters.py`_
     | This script uses galpy to generate orbital parameters and save them to fits
 -   | `5_compile_vac.py`_
-    | # This script uses all the fits files we have generated and compile VAC
+    | This script uses all the fits files we have generated and compile VAC
 
 .. _1_continuum_norm.py: 1_continuum_norm.py
 .. _2_gaia_xmatch.py: 2_gaia_xmatch.py

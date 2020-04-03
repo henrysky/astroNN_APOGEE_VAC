@@ -5,7 +5,6 @@ import numpy as np
 from astropy.io import fits
 from astropy.table import Table
 from astroquery.gaia import Gaia
-from requests.exceptions import HTTPError
 from config import allstar_path, gaia_allcolumns_f, gaia_rowmatch_f, gaia_table_name
 
 # open apogee allstar
@@ -14,10 +13,8 @@ ra_apogee = allstar_data['ra']
 gaia_matched_idx = np.where(allstar_data['GAIA_SOURCE_ID'] != 0)
 
 # try to login if any
-try:
+if os.stat("gaia_credential").st_size != 0:
        Gaia.login(credentials_file='gaia_credential')
-except HTTPError:
-       pass
 
 t = Table({'source_id':allstar_data['GAIA_SOURCE_ID']})
 t.write('temptable.xml', format='votable')
@@ -38,8 +35,6 @@ os.remove('temptable.xml')
 # parse job result and save
 gaia2_matches = job.results
 gaia2_matches.remove_columns(['datalink_url', 'epoch_photometry_url', 'designation', 'phot_variable_flag'])
-# pandat = gaia2_matches.filled(fill_value=-9999.).to_pandas()  # to remove units and fill -9999.
-# t2 = Table.from_pandas(pandat)
 gaia2_matches.write(gaia_allcolumns_f)
 
 # prepare the row matching allstar-gaia
@@ -59,7 +54,7 @@ pmdec = np.ones(ra_apogee.shape[0]) * np.nan
 pmdec_error = np.ones(ra_apogee.shape[0]) * np.nan
 phot_g_mean_mag = np.ones(ra_apogee.shape[0]) * np.nan
 bp_rp = np.ones(ra_apogee.shape[0]) * np.nan
-source_id = np.zeros(ra_apogee.shape[0], dtype=np.uint64)
+source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
 
 ra[gaia_matched_idx] = xmatched_allcolumns['ra']
 dec[gaia_matched_idx] = xmatched_allcolumns['dec']
