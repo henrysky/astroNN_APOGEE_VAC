@@ -10,10 +10,10 @@ from galpy.potential import MWPotential2014, evaluatePotentials, rl
 
 from config import allstar_path, gaia_rowmatch_f, astronn_dist_f, galpy_orbitparams_f, _R0, _v0, _z0
 
-allstar_data = fits.getdata(allstar_path)[:5000]
-f_gaia = fits.getdata(gaia_rowmatch_f)[:5000]
-f_dist = fits.getdata(astronn_dist_f)[:5000]
-f_astronn = fits.getdata(astronn_dist_f)[:5000]
+allstar_data = fits.getdata(allstar_path)
+f_gaia = fits.getdata(gaia_rowmatch_f)
+f_dist = fits.getdata(astronn_dist_f)
+f_astronn = fits.getdata(astronn_dist_f)
 
 _freq = bovy_conversion.freq_in_Gyr(_v0, _R0)
 

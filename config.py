@@ -10,7 +10,7 @@ gaia_table_name = "gaiadr2.gaia_source"
 
 # path to allstar
 allstar_path = "/yngve_data/sdss/apogee/dr16/apogee/spectro/aspcap/r12/l33/allStar-r12-l33.fits"
-# allstar_path = "C:/sdss_local/dr16/apogee/spectro/aspcap/r12/l33/allStar-r12-l33.fits"  # path on my windows
+allstar_path = "C:/sdss_local/dr16/apogee/spectro/aspcap/r12/l33/allStar-r12-l33.fits"  # path on my windows
 
 # base path to apStar/asStar files
 base_path = "/yngve_data/sdss/apogee/dr16/apogee/spectro/redux/r12/stars"
