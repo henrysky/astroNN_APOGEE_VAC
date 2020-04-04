@@ -42,6 +42,18 @@ xmatched_allcolumns = fits.getdata(gaia_allcolumns_f)
 
 ra = np.ones(ra_apogee.shape[0]) * np.nan
 dec = np.ones(ra_apogee.shape[0]) * np.nan
+ra_error = np.ones(ra_apogee.shape[0]) * np.nan
+dec_error = np.ones(ra_apogee.shape[0]) * np.nan
+ra_dec_corr = np.ones(ra_apogee.shape[0]) * np.nan
+ra_parallax_corr = np.ones(ra_apogee.shape[0]) * np.nan
+ra_pmra_corr = np.ones(ra_apogee.shape[0]) * np.nan
+ra_pmdec_corr = np.ones(ra_apogee.shape[0]) * np.nan
+dec_parallax_corr = np.ones(ra_apogee.shape[0]) * np.nan
+dec_pmra_corr = np.ones(ra_apogee.shape[0]) * np.nan
+dec_pmdec_corr = np.ones(ra_apogee.shape[0]) * np.nan
+parallax_pmra_corr = np.ones(ra_apogee.shape[0]) * np.nan
+parallax_pmdec_corr = np.ones(ra_apogee.shape[0]) * np.nan
+pmra_pmdec_corr = np.ones(ra_apogee.shape[0]) * np.nan
 ref_epoch = np.ones(ra_apogee.shape[0]) * np.nan
 parallax = np.ones(ra_apogee.shape[0]) * np.nan
 parallax_error = np.ones(ra_apogee.shape[0]) * np.nan
@@ -58,6 +70,18 @@ source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
 
 ra[gaia_matched_idx] = xmatched_allcolumns['ra']
 dec[gaia_matched_idx] = xmatched_allcolumns['dec']
+ra_error[gaia_matched_idx] = xmatched_allcolumns['ra_error']
+dec_error[gaia_matched_idx] = xmatched_allcolumns['dec_error']
+ra_dec_corr[gaia_matched_idx] = xmatched_allcolumns['ra_dec_corr']
+ra_parallax_corr[gaia_matched_idx] = xmatched_allcolumns['ra_parallax_corr']
+ra_pmra_corr[gaia_matched_idx] = xmatched_allcolumns['ra_pmra_corr']
+ra_pmdec_corr[gaia_matched_idx] = xmatched_allcolumns['ra_pmdec_corr']
+dec_parallax_corr[gaia_matched_idx] = xmatched_allcolumns['dec_parallax_corr']
+dec_pmra_corr[gaia_matched_idx] = xmatched_allcolumns['dec_pmra_corr']
+dec_pmdec_corr[gaia_matched_idx] = xmatched_allcolumns['dec_pmdec_corr']
+parallax_pmra_corr[gaia_matched_idx] = xmatched_allcolumns['parallax_pmra_corr']
+parallax_pmdec_corr[gaia_matched_idx] = xmatched_allcolumns['parallax_pmdec_corr']
+pmra_pmdec_corr[gaia_matched_idx] = xmatched_allcolumns['pmra_pmdec_corr']
 ref_epoch[gaia_matched_idx] = xmatched_allcolumns['ref_epoch']
 parallax[gaia_matched_idx] = xmatched_allcolumns['parallax']
 parallax_error[gaia_matched_idx] = xmatched_allcolumns['parallax_error']
@@ -76,8 +100,20 @@ col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18
        fits.Column(name='LOCATION_ID', array=allstar_data['LOCATION_ID'], format="J"),
        fits.Column(name='RA_APOGEE', array=allstar_data['RA'], format='D'),
        fits.Column(name='DEC_APOGEE', array=allstar_data['DEC'], format='D'),
-       fits.Column(name='RA', array=ra, format='D'),
-       fits.Column(name='DEC', array=dec, format='D'),
+       fits.Column(name='ra', array=ra, format='D'),
+       fits.Column(name='dec', array=dec, format='D'),
+       fits.Column(name='ra_error', array=ra_error, format='D'),
+       fits.Column(name='dec_error', array=dec_error, format='D'),
+       fits.Column(name='ra_dec_corr', array=ra_dec_corr, format='D'),
+       fits.Column(name='ra_parallax_corr', array=ra_parallax_corr, format='D'),
+       fits.Column(name='ra_pmra_corr', array=ra_pmra_corr, format='D'),
+       fits.Column(name='ra_pmdec_corr', array=ra_pmdec_corr, format='D'),
+       fits.Column(name='dec_parallax_corr', array=dec_parallax_corr, format='D'),
+       fits.Column(name='dec_pmra_corr', array=dec_pmra_corr, format='D'),
+       fits.Column(name='dec_pmdec_corr', array=dec_pmdec_corr, format='D'),
+       fits.Column(name='parallax_pmra_corr', array=parallax_pmra_corr, format='D'),
+       fits.Column(name='parallax_pmdec_corr', array=parallax_pmdec_corr, format='D'),
+       fits.Column(name='pmra_pmdec_corr', array=pmra_pmdec_corr, format='D'),
        fits.Column(name='ref_epoch', array=ref_epoch, format='D'),
        fits.Column(name='parallax', array=parallax, format='D'),
        fits.Column(name='parallax_error', array=parallax_error, format='D'),
