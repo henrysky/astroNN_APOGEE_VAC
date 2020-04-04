@@ -10,10 +10,10 @@ from galpy.potential import MWPotential2014, evaluatePotentials, rl
 
 from config import allstar_path, gaia_rowmatch_f, astronn_dist_f, galpy_orbitparams_f, _R0, _v0, _z0
 
-allstar_data = fits.getdata(allstar_path)
-f_gaia = fits.getdata(gaia_rowmatch_f)
-f_dist = fits.getdata(astronn_dist_f)
-f_astronn = fits.getdata(astronn_dist_f)
+allstar_data = fits.getdata(allstar_path)[:5000]
+f_gaia = fits.getdata(gaia_rowmatch_f)[:5000]
+f_dist = fits.getdata(astronn_dist_f)[:5000]
+f_astronn = fits.getdata(astronn_dist_f)[:5000]
 
 _freq = bovy_conversion.freq_in_Gyr(_v0, _R0)
 
@@ -138,22 +138,19 @@ def process_single(i):
     zmax_rap_corr = tcov[1, 3] / (errs[1] * errs[3])
     rperi_rap_corr = tcov[2, 3] / (errs[2] * errs[3])
     e_err, zmax_err, rperi_err, rap_err = errs
-    action = aAS.actionsFreqsAngles(sRpz[:, 0], svRvTvz[:, 0], svRvTvz[:, 1], sRpz[:, 2], svRvTvz[:, 2], sRpz[:, 1])
-    action = np.array(action)
-    tcov = np.cov(action)
-    errs = np.sqrt(np.diag(tcov))
-    jr_lz_corr = tcov[0, 1] / (errs[0] * errs[1])
-    jr_jz_corr = tcov[0, 2] / (errs[0] * errs[2])
-    lz_jz_corr = tcov[1, 2] / (errs[1] * errs[2])
+    action = np.array(
+        aAS.actionsFreqsAngles(sRpz[:, 0], svRvTvz[:, 0], svRvTvz[:, 1], sRpz[:, 2], svRvTvz[:, 2], sRpz[:, 1]))
+    tcov_after_action = np.cov(action)
+    jr_lz_corr = tcov_after_action[0, 1] / (errs[0] * errs[1])
+    jr_jz_corr = tcov_after_action[0, 2] / (errs[0] * errs[2])
+    lz_jz_corr = tcov_after_action[1, 2] / (errs[1] * errs[2])
     jr_err, lz_err, jz_err, or_err, op_err, oz_err, tr_err, tphi_err, tz_err = errs
 
-    Rc = np.array([rl(MWPotential2014, lz) for lz in action[1]])
-    Ec = (evaluatePotentials(MWPotential2014, Rc, 0.) + 0.5 * (action[1]) ** 2. / Rc ** 2.)
+    Rc = np.array([rl(MWPotential2014, lz) for lz in action[1]]) * _R0
+    Ec = (evaluatePotentials(MWPotential2014, Rc, 0.) + 0.5 * (action[1]) ** 2. / Rc ** 2.) * _v0 ** 2
+    E = evaluatePotentials(MWPotential2014, sRpz[:, 0], sRpz[:, 2], phi=sRpz[:, 1]) + np.sum(svRvTvz ** 2 / 2.,
+                                                                                             axis=1) * _v0 ** 2
 
-    E = evaluatePotentials(MWPotential2014, sRpz[:, 0], sRpz[:, 2], phi=sRpz[:, 1]) + np.sum(svRvTvz ** 2 / 2., axis=1)
-    Rc = Rc * _R0
-    Ec = Ec * _v0 ** 2
-    E = E * _v0 ** 2
     return np.nanmean(e), e_err, np.nanmean(zmax) * _R0, zmax_err * _R0, np.nanmean(
         rperi) * _R0, rperi_err * _R0, np.nanmean(rap) * _R0, rap_err * _R0, \
            e_zmax_corr, e_rperi_corr, e_rap_corr, zmax_rperi_corr, zmax_rap_corr, rperi_rap_corr, \
@@ -166,105 +163,106 @@ def process_single(i):
            np.nanmean(Rc), np.nanstd(Rc), np.nanmean(E), np.nanstd(E), np.nanmean(E - Ec), np.nanstd(E - Ec)
 
 
-print('starting MP run...')
-with multiprocessing.Pool(int(multiprocessing.cpu_count() / 2)) as p:
-    output = list(tqdm.tqdm(p.imap(process_single, range(len(ra))), total=len(ra)))
+if __name__ == '__main__':  # needed for multiprocessing on Windows
+    print('starting MP run...')
+    with multiprocessing.Pool(int(multiprocessing.cpu_count() / 2)) as p:
+        output = list(tqdm.tqdm(p.imap(process_single, range(len(ra))), total=len(ra)))
 
-output = np.array(output)
+    output = np.array(output)
 
-rec = np.recarray(tuple(len(output)), dtype=[('source_id', np.int64),
-                                             ('APOGEE_ID', '<U18'),
-                                             ('ra', float),
-                                             ('dec', float),
-                                             ('e', float),
-                                             ('e_err', float),
-                                             ('zmax', float),
-                                             ('zmax_err', float),
-                                             ('rperi', float),
-                                             ('rperi_err', float),
-                                             ('rap', float),
-                                             ('rap_err', float),
-                                             ('e_zmax_corr', float),
-                                             ('e_rperi_corr', float),
-                                             ('e_rap_corr', float),
-                                             ('zmax_rperi_corr', float),
-                                             ('zmax_rap_corr', float),
-                                             ('rperi_rap_corr', float),
-                                             ('jr', float),
-                                             ('jr_err', float),
-                                             ('Lz', float),
-                                             ('Lz_err', float),
-                                             ('jz', float),
-                                             ('jz_err', float),
-                                             ('jr_Lz_corr', float),
-                                             ('jr_jz_corr', float),
-                                             ('lz_jz_corr', float),
-                                             ('omega_r', float),
-                                             ('omega_r_err', float),
-                                             ('omega_phi', float),
-                                             ('omega_phi_err', float),
-                                             ('omega_z', float),
-                                             ('omega_z_err', float),
-                                             ('theta_r', float),
-                                             ('theta_r_err', float),
-                                             ('theta_phi', float),
-                                             ('theta_phi_err', float),
-                                             ('theta_z', float),
-                                             ('theta_z_err', float),
-                                             ('rl', float),
-                                             ('rl_err', float),
-                                             ('E', float),
-                                             ('E_err', float),
-                                             ('EminusEc', float),
-                                             ('EminusEc_err', float)])
+    rec = np.recarray([len(output), ], dtype=[('source_id', np.int64),
+                                              ('APOGEE_ID', '<U18'),
+                                              ('ra', float),
+                                              ('dec', float),
+                                              ('e', float),
+                                              ('e_err', float),
+                                              ('zmax', float),
+                                              ('zmax_err', float),
+                                              ('rperi', float),
+                                              ('rperi_err', float),
+                                              ('rap', float),
+                                              ('rap_err', float),
+                                              ('e_zmax_corr', float),
+                                              ('e_rperi_corr', float),
+                                              ('e_rap_corr', float),
+                                              ('zmax_rperi_corr', float),
+                                              ('zmax_rap_corr', float),
+                                              ('rperi_rap_corr', float),
+                                              ('jr', float),
+                                              ('jr_err', float),
+                                              ('Lz', float),
+                                              ('Lz_err', float),
+                                              ('jz', float),
+                                              ('jz_err', float),
+                                              ('jr_Lz_corr', float),
+                                              ('jr_jz_corr', float),
+                                              ('lz_jz_corr', float),
+                                              ('omega_r', float),
+                                              ('omega_r_err', float),
+                                              ('omega_phi', float),
+                                              ('omega_phi_err', float),
+                                              ('omega_z', float),
+                                              ('omega_z_err', float),
+                                              ('theta_r', float),
+                                              ('theta_r_err', float),
+                                              ('theta_phi', float),
+                                              ('theta_phi_err', float),
+                                              ('theta_z', float),
+                                              ('theta_z_err', float),
+                                              ('rl', float),
+                                              ('rl_err', float),
+                                              ('E', float),
+                                              ('E_err', float),
+                                              ('EminusEc', float),
+                                              ('EminusEc_err', float)])
 
-keys = ['e',
-        'e_err',
-        'zmax',
-        'zmax_err',
-        'rperi',
-        'rperi_err',
-        'rap',
-        'rap_err',
-        'e_zmax_corr',
-        'e_rperi_corr',
-        'e_rap_corr',
-        'zmax_rperi_corr',
-        'zmax_rap_corr',
-        'rperi_rap_corr',
-        'jr',
-        'jr_err',
-        'Lz',
-        'Lz_err',
-        'jz',
-        'jz_err',
-        'jr_Lz_corr',
-        'jr_jz_corr',
-        'lz_jz_corr',
-        'omega_r',
-        'omega_r_err',
-        'omega_phi',
-        'omega_phi_err',
-        'omega_z',
-        'omega_z_err',
-        'theta_r',
-        'theta_r_err',
-        'theta_phi',
-        'theta_phi_err',
-        'theta_z',
-        'theta_z_err',
-        'rl',
-        'rl_err',
-        'E',
-        'E_err',
-        'EminusEc',
-        'EminusEc_err']
-rec['source_id'] = source_ids
-rec['APOGEE_ID'] = apogee_ids
-rec['ra'] = ra
-rec['dec'] = dec
-for i in range(len(keys)):
-    rec[keys[i]] = output[:, i]
+    keys = ['e',
+            'e_err',
+            'zmax',
+            'zmax_err',
+            'rperi',
+            'rperi_err',
+            'rap',
+            'rap_err',
+            'e_zmax_corr',
+            'e_rperi_corr',
+            'e_rap_corr',
+            'zmax_rperi_corr',
+            'zmax_rap_corr',
+            'rperi_rap_corr',
+            'jr',
+            'jr_err',
+            'Lz',
+            'Lz_err',
+            'jz',
+            'jz_err',
+            'jr_Lz_corr',
+            'jr_jz_corr',
+            'lz_jz_corr',
+            'omega_r',
+            'omega_r_err',
+            'omega_phi',
+            'omega_phi_err',
+            'omega_z',
+            'omega_z_err',
+            'theta_r',
+            'theta_r_err',
+            'theta_phi',
+            'theta_phi_err',
+            'theta_z',
+            'theta_z_err',
+            'rl',
+            'rl_err',
+            'E',
+            'E_err',
+            'EminusEc',
+            'EminusEc_err']
+    rec['source_id'] = source_ids
+    rec['APOGEE_ID'] = apogee_ids
+    rec['ra'] = ra
+    rec['dec'] = dec
+    for i in range(len(keys)):
+        rec[keys[i]] = output[:, i]
 
-hdu = fits.BinTableHDU.from_columns(rec)
-hdu.writeto(galpy_orbitparams_f)
+    hdu = fits.BinTableHDU.from_columns(rec)
+    hdu.writeto(galpy_orbitparams_f)

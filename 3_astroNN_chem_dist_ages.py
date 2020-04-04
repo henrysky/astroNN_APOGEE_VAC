@@ -6,7 +6,7 @@ from astroNN.models import load_folder
 from astroNN.gaia import extinction_correction, fakemag_to_pc, fakemag_to_parallax
 
 from config import allstar_path, contspac_file_name, gaia_rowmatch_f, astronn_chem_model, astronn_dist_model, \
-    astronn_age_model, astronn_chem_f, astronn_dist_f
+    astronn_age_model, astronn_chem_f, astronn_dist_f, astronn_ages_f
 
 allstar_data = fits.getdata(allstar_path)
 
@@ -84,10 +84,10 @@ nn_parallax_model_err[bad_idx] = np.nan
 
 deno = ((1. / nn_parallax_model_err ** 2) + (1. / apogeegaia_file['parallax_error'] ** 2))
 weighted_parallax = ((nn_parallax / nn_parallax_model_err ** 2) + (
-            parallax / apogeegaia_file['parallax_error'] ** 2)) / deno
+        parallax / apogeegaia_file['parallax_error'] ** 2)) / deno
 weighted_parallax_err = 1 / deno
 
-# if one of them is -9999, use the value from the other one
+# if one of them is -9999 or NaN, use the value from the other one
 idx = ((parallax == np.nan) & (nn_parallax != np.nan))
 weighted_parallax[idx] = nn_parallax[idx]
 weighted_parallax_err[idx] = nn_parallax_model_err[idx] ** 2  # still variance
@@ -96,7 +96,7 @@ idx = ((nn_parallax == np.nan) & (parallax != np.nan))
 weighted_parallax[idx] = parallax[idx]
 weighted_parallax_err[idx] = parallax_error[idx] ** 2  # still variance
 
-# if both of them is -9999, then np.nan
+# if both of them is -9999 or NaN, then np.nan
 weighted_parallax[(parallax == np.nan) & (nn_parallax == np.nan)] = np.nan
 weighted_parallax_err[(parallax == np.nan) & (nn_parallax == np.nan)] = np.nan
 
@@ -108,7 +108,7 @@ weighted_parallax_err = np.ma.sqrt(np.ma.array(weighted_parallax_err, mask=(weig
 weighted_dist = 1000 / weighted_parallax
 weighted_dist_err = weighted_dist * (weighted_parallax_err / weighted_parallax)
 
-# if both of them is -9999, then np.nan
+# if both of them is -9999 or NaN, then np.nan
 weighted_dist[(parallax == np.nan) & (nn_parallax == np.nan)] = np.nan
 weighted_dist_err[(parallax == np.nan) & (nn_parallax == np.nan)] = np.nan
 
@@ -146,3 +146,27 @@ t.writeto(astronn_dist_f)
 net = load_folder(astronn_age_model)
 
 pred, pred_error = net.test(all_spec)
+
+# some spectra are all zeros, set prediction for those spectra to NaN
+pred[np.all(all_spec == 0., axis=1)] = np.nan
+pred_error['total'][np.all(all_spec == 0., axis=1)] = np.nan
+pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
+
+# deal with infinite error issue if it exists, set them to NaN
+inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
+pred[inf_err_idx] = np.nan
+pred_error['total'][inf_err_idx] = np.nan
+pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
+
+columns_list = [fits.Column(name='apogee_id', array=allstar_data['APOGEE_ID'], format="18A"),
+                fits.Column(name='location_id', array=allstar_data['LOCATION_ID'], format="J"),
+                fits.Column(name='ra_apogee', array=allstar_data['RA'], format='D'),
+                fits.Column(name='dec_apogee', array=allstar_data['DEC'], format='D'),
+                fits.Column(name='age', array=pred[:, -1], format='D'),
+                fits.Column(name='age_linear_correct', array=(pred[:, -1] - 1.31308873) / 0.62512186, format='D'),
+                # fits.Column(name='age_lowess_correct', array=correction(pred[:,-1]), format='D'),
+                fits.Column(name='age_total_error', array=pred_error['total'][:, -1], format='D'),
+                fits.Column(name='age_model_error', array=pred_error['model'][:, -1], format='D')]
+
+t = fits.BinTableHDU.from_columns(columns_list)
+t.writeto(astronn_ages_f)

@@ -2,13 +2,16 @@
 
 from astropy.io import fits
 
-from config import allstar_path, gaia_rowmatch_f, astronn_chem_f, astronn_dist_f, astronn_apogee_vac_f
+from config import allstar_path, gaia_rowmatch_f, astronn_chem_f, astronn_dist_f, galpy_orbitparams_f, \
+    astronn_ages_f, astronn_apogee_vac_f
 
 allstar_data = fits.getdata(allstar_path)
 f_gaia = fits.getdata(gaia_rowmatch_f)
 
-f_chem= fits.getdata(astronn_chem_f)
+f_chem = fits.getdata(astronn_chem_f)
 f_dist = fits.getdata(astronn_dist_f)
+f_ages = fits.getdata(astronn_ages_f)
+f_orbitparams = fits.getdata(galpy_orbitparams_f)
 
 c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
      fits.Column(name='LOCATION_ID', array=allstar_data['LOCATION_ID'], format="J"),
@@ -77,7 +80,55 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='pmdec', array=f_gaia['pmdec'], format='D'),
      fits.Column(name='pmdec_error', array=f_gaia['pmdec_error'], format='D'),
      fits.Column(name='phot_g_mean_mag', array=f_gaia['phot_g_mean_mag'], format='D'),
-     fits.Column(name='bp_rp', array=f_gaia['bp_rp'], format='D')]
+     fits.Column(name='bp_rp', array=f_gaia['bp_rp'], format='D'),
+
+     fits.Column(name='age', array=f_ages['age'], format='D'),
+     fits.Column(name='age_linear_correct', array=f_ages['age_linear_correct'], format='D'),
+     # fits.Column(name='age_lowess_correct', array=f_ages['age_lowess_correct'], format='D'),
+     fits.Column(name='age_total_error', array=f_ages['age_total_error'], format='D'),
+     fits.Column(name='age_model_error', array=f_ages['age_model_error'], format='D'),
+
+     fits.Column(name='e', array=f_orbitparams['e'], format='D'),
+     fits.Column(name='e_err', array=f_orbitparams['e_err'], format='D'),
+     fits.Column(name='zmax', array=f_orbitparams['zmax'], format='D'),
+     fits.Column(name='zmax_err', array=f_orbitparams['zmax_err'], format='D'),
+     fits.Column(name='rperi', array=f_orbitparams['rperi'], format='D'),
+     fits.Column(name='rperi_err', array=f_orbitparams['rperi_err'], format='D'),
+     fits.Column(name='rap', array=f_orbitparams['rap'], format='D'),
+     fits.Column(name='rap_err', array=f_orbitparams['rap_err'], format='D'),
+     fits.Column(name='e_zmax_corr', array=f_orbitparams['e_zmax_corr'], format='D'),
+     fits.Column(name='e_rperi_corr', array=f_orbitparams['e_rperi_corr'], format='D'),
+     fits.Column(name='e_rap_corr', array=f_orbitparams['e_rap_corr'], format='D'),
+     fits.Column(name='zmax_rperi_corr', array=f_orbitparams['zmax_rperi_corr'], format='D'),
+     fits.Column(name='rperi_rap_corr', array=f_orbitparams['rperi_rap_corr'], format='D'),
+     fits.Column(name='jr', array=f_orbitparams['jr'], format='D'),
+     fits.Column(name='jr_err', array=f_orbitparams['jr_err'], format='D'),
+     fits.Column(name='bp_rp', array=f_orbitparams['bp_rp'], format='D'),
+     fits.Column(name='Lz', array=f_orbitparams['Lz'], format='D'),
+     fits.Column(name='Lz_err', array=f_orbitparams['Lz_err'], format='D'),
+     fits.Column(name='jz', array=f_orbitparams['jz'], format='D'),
+     fits.Column(name='jz_err', array=f_orbitparams['jz_err'], format='D'),
+     fits.Column(name='jr_Lz_corr', array=f_orbitparams['jr_Lz_corr'], format='D'),
+     fits.Column(name='jr_jz_corr', array=f_orbitparams['jr_jz_corr'], format='D'),
+     fits.Column(name='lz_jz_corr', array=f_orbitparams['lz_jz_corr'], format='D'),
+     fits.Column(name='omega_r', array=f_orbitparams['omega_r'], format='D'),
+     fits.Column(name='omega_r_err', array=f_orbitparams['omega_r_err'], format='D'),
+     fits.Column(name='omega_phi', array=f_orbitparams['omega_phi'], format='D'),
+     fits.Column(name='omega_phi_err', array=f_orbitparams['omega_phi_err'], format='D'),
+     fits.Column(name='omega_z', array=f_orbitparams['omega_z'], format='D'),
+     fits.Column(name='omega_z_err', array=f_orbitparams['omega_z_err'], format='D'),
+     fits.Column(name='theta_r', array=f_orbitparams['theta_r'], format='D'),
+     fits.Column(name='theta_r_err', array=f_orbitparams['theta_r_err'], format='D'),
+     fits.Column(name='theta_phi', array=f_orbitparams['theta_phi'], format='D'),
+     fits.Column(name='theta_phi_err', array=f_orbitparams['theta_phi_err'], format='D'),
+     fits.Column(name='theta_z', array=f_orbitparams['theta_z'], format='D'),
+     fits.Column(name='theta_z_err', array=f_orbitparams['theta_z_err'], format='D'),
+     fits.Column(name='rl', array=f_orbitparams['rl'], format='D'),
+     fits.Column(name='rl_err', array=f_orbitparams['rl_err'], format='D'),
+     fits.Column(name='E', array=f_orbitparams['E'], format='D'),
+     fits.Column(name='E_err', array=f_orbitparams['E_err'], format='D'),
+     fits.Column(name='EminusEc', array=f_orbitparams['EminusEc'], format='D'),
+     fits.Column(name='EminusEc_err', array=f_orbitparams['EminusEc_err'], format='D')]
 
 # save a fits
 t = fits.BinTableHDU.from_columns(c)
