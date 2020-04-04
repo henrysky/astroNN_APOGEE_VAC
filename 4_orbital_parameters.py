@@ -141,6 +141,7 @@ def process_single(i):
     action = np.array(
         aAS.actionsFreqsAngles(sRpz[:, 0], svRvTvz[:, 0], svRvTvz[:, 1], sRpz[:, 2], svRvTvz[:, 2], sRpz[:, 1]))
     tcov_after_action = np.cov(action)
+    errs = np.sqrt(np.diag(tcov_after_action))
     jr_lz_corr = tcov_after_action[0, 1] / (errs[0] * errs[1])
     jr_jz_corr = tcov_after_action[0, 2] / (errs[0] * errs[2])
     lz_jz_corr = tcov_after_action[1, 2] / (errs[1] * errs[2])
