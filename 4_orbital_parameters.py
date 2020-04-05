@@ -149,8 +149,8 @@ def process_single(i):
 
     Rc = np.array([rl(MWPotential2014, lz) for lz in action[1]]) * _R0
     Ec = (evaluatePotentials(MWPotential2014, Rc, 0.) + 0.5 * (action[1]) ** 2. / Rc ** 2.) * _v0 ** 2
-    E = evaluatePotentials(MWPotential2014, sRpz[:, 0], sRpz[:, 2], phi=sRpz[:, 1]) + np.sum(svRvTvz ** 2 / 2.,
-                                                                                             axis=1) * _v0 ** 2
+    E = (evaluatePotentials(MWPotential2014, sRpz[:, 0], sRpz[:, 2], phi=sRpz[:, 1]) + np.sum(svRvTvz ** 2 / 2.,
+                                                                                              axis=1)) * _v0 ** 2
 
     return np.nanmean(e), e_err, np.nanmean(zmax) * _R0, zmax_err * _R0, np.nanmean(
         rperi) * _R0, rperi_err * _R0, np.nanmean(rap) * _R0, rap_err * _R0, \
@@ -212,8 +212,8 @@ if __name__ == '__main__':  # needed for multiprocessing on Windows
                                               ('theta_z_err', float),
                                               ('rl', float),
                                               ('rl_err', float),
-                                              ('E', float),
-                                              ('E_err', float),
+                                              ('Energy', float),
+                                              ('Energy_err', float),
                                               ('EminusEc', float),
                                               ('EminusEc_err', float)])
 
@@ -254,8 +254,8 @@ if __name__ == '__main__':  # needed for multiprocessing on Windows
             'theta_z_err',
             'rl',
             'rl_err',
-            'E',
-            'E_err',
+            'Energy',
+            'Energy_err',
             'EminusEc',
             'EminusEc_err']
     rec['source_id'] = source_ids

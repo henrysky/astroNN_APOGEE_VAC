@@ -19,8 +19,6 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='FIELD', array=allstar_data['FIELD'], format="19A"),
      fits.Column(name='RA_APOGEE', array=allstar_data['RA'], format='D'),
      fits.Column(name='DEC_APOGEE', array=allstar_data['DEC'], format='D'),
-     fits.Column(name='VHELIO_AVG', array=allstar_data['VHELIO_AVG'], format='E'),
-     fits.Column(name='source_id', array=f_gaia['source_id'], format='K'),
      fits.Column(name='TEFF', array=f_chem['astroNN'][:, 0], format='E'),
      fits.Column(name='TEFF_ERR', array=f_chem['astroNN_error'][:, 0], format='E'),
      fits.Column(name='LOGG', array=f_chem['astroNN'][:, 1], format='E'),
@@ -81,6 +79,7 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='pmdec_error', array=f_gaia['pmdec_error'], format='D'),
      fits.Column(name='phot_g_mean_mag', array=f_gaia['phot_g_mean_mag'], format='D'),
      fits.Column(name='bp_rp', array=f_gaia['bp_rp'], format='D'),
+     fits.Column(name='VHELIO_AVG', array=allstar_data['VHELIO_AVG'], format='E'),
 
      fits.Column(name='age', array=f_ages['age'], format='D'),
      fits.Column(name='age_linear_correct', array=f_ages['age_linear_correct'], format='D'),
@@ -88,6 +87,7 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='age_total_error', array=f_ages['age_total_error'], format='D'),
      fits.Column(name='age_model_error', array=f_ages['age_model_error'], format='D'),
 
+     fits.Column(name='source_id', array=f_gaia['source_id'], format='K'),
      fits.Column(name='e', array=f_orbitparams['e'], format='D'),
      fits.Column(name='e_err', array=f_orbitparams['e_err'], format='D'),
      fits.Column(name='zmax', array=f_orbitparams['zmax'], format='D'),
@@ -125,8 +125,8 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='theta_z_err', array=f_orbitparams['theta_z_err'], format='D'),
      fits.Column(name='rl', array=f_orbitparams['rl'], format='D'),
      fits.Column(name='rl_err', array=f_orbitparams['rl_err'], format='D'),
-     fits.Column(name='E', array=f_orbitparams['E'], format='D'),
-     fits.Column(name='E_err', array=f_orbitparams['E_err'], format='D'),
+     fits.Column(name='Energy', array=f_orbitparams['E'], format='D'),
+     fits.Column(name='Energy_err', array=f_orbitparams['E_err'], format='D'),
      fits.Column(name='EminusEc', array=f_orbitparams['EminusEc'], format='D'),
      fits.Column(name='EminusEc_err', array=f_orbitparams['EminusEc_err'], format='D')]
 
