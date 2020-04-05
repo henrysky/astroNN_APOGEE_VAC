@@ -1,9 +1,13 @@
 # This script uses all the fits files we have generated and compile VAC
 
+import os
 from astropy.io import fits
 
 from config import allstar_path, gaia_rowmatch_f, astronn_chem_f, astronn_dist_f, galpy_orbitparams_f, \
     astronn_ages_f, astronn_apogee_vac_f
+
+if os.path.exists(astronn_apogee_vac_f):
+    raise FileExistsError(f"{astronn_apogee_vac_f} already existed")
 
 allstar_data = fits.getdata(allstar_path)
 f_gaia = fits.getdata(gaia_rowmatch_f)

@@ -1,11 +1,15 @@
 # This script continuum normalizing all the APOGEE spectra and save them to a single fits
 
+import os
 import time
 import numpy as np
 from astropy.io import fits
 from astroNN.apogee.chips import apogee_continuum
 
 from config import allstar_path, base_path, contspac_file_name
+
+if os.path.exists(contspac_file_name):
+    raise FileExistsError(f"{contspac_file_name} already existed")
 
 # read allstar
 allstar_data = fits.getdata(allstar_path)

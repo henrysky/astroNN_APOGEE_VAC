@@ -1,5 +1,6 @@
 # This script uses galpy to generate orbital parameters and save them to fits
 
+import os
 import tqdm
 import numpy as np
 import multiprocessing
@@ -9,6 +10,9 @@ from galpy.actionAngle import actionAngleStaeckel, estimateDeltaStaeckel
 from galpy.potential import MWPotential2014, evaluatePotentials, rl
 
 from config import allstar_path, gaia_rowmatch_f, astronn_dist_f, galpy_orbitparams_f, _R0, _v0, _z0
+
+if os.path.exists(galpy_orbitparams_f):
+    raise FileExistsError(f"{galpy_orbitparams_f} already existed")
 
 allstar_data = fits.getdata(allstar_path)
 f_gaia = fits.getdata(gaia_rowmatch_f)

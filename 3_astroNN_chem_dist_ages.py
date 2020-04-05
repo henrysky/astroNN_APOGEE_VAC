@@ -1,5 +1,6 @@
 # This script uses neural network models to get abundances, distance, ages and save them to fits
 
+import os
 import numpy as np
 from astropy.io import fits
 from astroNN.models import load_folder
@@ -7,6 +8,13 @@ from astroNN.gaia import extinction_correction, fakemag_to_pc, fakemag_to_parall
 
 from config import allstar_path, contspac_file_name, gaia_rowmatch_f, astronn_chem_model, astronn_dist_model, \
     astronn_age_model, astronn_chem_f, astronn_dist_f, astronn_ages_f
+
+if os.path.exists(astronn_chem_f):
+    raise FileExistsError(f"{astronn_chem_f} already existed")
+if os.path.exists(astronn_dist_f):
+    raise FileExistsError(f"{astronn_dist_f} already existed")
+if os.path.exists(astronn_ages_f):
+    raise FileExistsError(f"{astronn_ages_f} already existed")
 
 allstar_data = fits.getdata(allstar_path)
 
