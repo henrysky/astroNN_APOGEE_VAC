@@ -8,7 +8,7 @@ astroNN DR16 VAC: https://www.sdss.org/dr16/data_access/value-added-catalogs/?va
 Requirement
 ---------------
 
-``python>=3.6``, ``numpy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``, ``pyyaml``
+``python>=3.6``, ``numpy``, ``scipy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``, ``pyyaml``, ``statsmodels``, ``h5py``
 
 Scripts
 ---------

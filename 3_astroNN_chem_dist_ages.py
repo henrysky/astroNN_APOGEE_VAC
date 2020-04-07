@@ -1,10 +1,13 @@
 # This script uses neural network models to get abundances, distance, ages and save them to fits
 
 import os
+import h5py
 import numpy as np
 from astropy.io import fits
 from astroNN.models import load_folder
 from astroNN.gaia import extinction_correction, fakemag_to_pc, fakemag_to_parallax
+from statsmodels.nonparametric.smoothers_lowess import lowess
+from scipy.interpolate import interp1d
 
 from config import allstar_path, contspac_file_name, gaia_rowmatch_f, astronn_chem_model, astronn_dist_model, \
     astronn_age_model, astronn_chem_f, astronn_dist_f, astronn_ages_f
@@ -166,13 +169,25 @@ pred[inf_err_idx] = np.nan
 pred_error['total'][inf_err_idx] = np.nan
 pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
 
+f_apokasc2 = h5py.File("APOKASC2.h5", 'r')
+
+idx = []
+for aid in np.array(f_apokasc2['APOGEE_ID']):
+    try:
+        idx.append(int(np.where(allstar_data['APOGEE_ID'] == aid.decode())[0][0]))
+    except IndexError:
+        idx.append(0)
+
+out = lowess(np.array(f_apokasc2['Age']), pred[:, -1][idx], frac=0.8, delta=0.1)
+correction = interp1d(out[:,0], out[:,1], bounds_error=False, fill_value='extrapolate')
+
 columns_list = [fits.Column(name='apogee_id', array=allstar_data['APOGEE_ID'], format="18A"),
                 fits.Column(name='location_id', array=allstar_data['LOCATION_ID'], format="J"),
                 fits.Column(name='ra_apogee', array=allstar_data['RA'], format='D'),
                 fits.Column(name='dec_apogee', array=allstar_data['DEC'], format='D'),
                 fits.Column(name='age', array=pred[:, -1], format='D'),
                 fits.Column(name='age_linear_correct', array=(pred[:, -1] - 1.31308873) / 0.62512186, format='D'),
-                # fits.Column(name='age_lowess_correct', array=correction(pred[:,-1]), format='D'),
+                fits.Column(name='age_lowess_correct', array=correction(pred[:,-1]), format='D'),
                 fits.Column(name='age_total_error', array=pred_error['total'][:, -1], format='D'),
                 fits.Column(name='age_model_error', array=pred_error['model'][:, -1], format='D')]
 

@@ -87,7 +87,7 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
 
      fits.Column(name='age', array=f_ages['age'], format='D'),
      fits.Column(name='age_linear_correct', array=f_ages['age_linear_correct'], format='D'),
-     # fits.Column(name='age_lowess_correct', array=f_ages['age_lowess_correct'], format='D'),
+     fits.Column(name='age_lowess_correct', array=f_ages['age_lowess_correct'], format='D'),
      fits.Column(name='age_total_error', array=f_ages['age_total_error'], format='D'),
      fits.Column(name='age_model_error', array=f_ages['age_model_error'], format='D'),
 
