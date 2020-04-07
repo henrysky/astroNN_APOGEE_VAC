@@ -112,10 +112,10 @@ def obs_to_galcen(ra, dec, dist, pmra, pmdec, rv, ro=_R0, vo=_v0, zo=_z0):
 def process_single(i):
     vxvv = [ra[i], dec[i], distance[i], pmra[i], pmdec[i], rv[i]]
     if not np.all(np.isfinite(vxvv)) or not np.all(np.isfinite(covariance[i])):
-        return np.ones(41) * np.nan
+        return np.ones(56) * np.nan
     samp = np.random.multivariate_normal(vxvv, covariance[i], size=100)
     if not (np.all(samp[:, 1] < 90.) & np.all(samp[:, 1] > -90.)):
-        return np.ones(41) * np.nan
+        return np.ones(56) * np.nan
     sXYZ, svxyz, sRpz, svRvTvz = obs_to_galcen(samp[:, 0],
                                                samp[:, 1],
                                                samp[:, 2],
@@ -156,6 +156,19 @@ def process_single(i):
     E = (evaluatePotentials(MWPotential2014, sRpz[:, 0], sRpz[:, 2], phi=sRpz[:, 1]) + np.sum(svRvTvz ** 2 / 2.,
                                                                                               axis=1)) * _v0 ** 2
 
+    # galactocentric coord and vel uncertainty
+    galcen_tcov = np.cov(np.dstack([sRpz[:, 0], sRpz[:, 1], sRpz[:, 2]])[0].T)
+    galcen_errs = np.sqrt(np.diag(galcen_tcov))
+    galr_err, galphi_err, galz_err = galcen_errs
+
+    galcenv_tcov = np.cov(np.dstack([svRvTvz[:, 0], svRvTvz[:, 1], svRvTvz[:, 2]])[0].T)
+    galcenv_errs = np.sqrt(np.diag(galcenv_tcov))
+    galvr_err, galvt_err, galvz_err = galcenv_errs
+
+    galvr_galvt_corr = galcenv_tcov[0, 1] / (galcenv_errs[0] * galcenv_errs[1])
+    galvr_galvz_corr = galcenv_tcov[0, 2] / (galcenv_errs[0] * galcenv_errs[2])
+    galvt_galvz_corr = galcenv_tcov[1, 2] / (galcenv_errs[1] * galcenv_errs[2])
+
     return np.nanmean(e), e_err, np.nanmean(zmax) * _R0, zmax_err * _R0, np.nanmean(
         rperi) * _R0, rperi_err * _R0, np.nanmean(rap) * _R0, rap_err * _R0, \
            e_zmax_corr, e_rperi_corr, e_rap_corr, zmax_rperi_corr, zmax_rap_corr, rperi_rap_corr, \
@@ -165,7 +178,23 @@ def process_single(i):
            np.nanmean(action[3]) * _freq, or_err * _freq, np.nanmean(action[4]) * _freq, op_err * _freq, np.nanmean(
         action[5]) * _freq, oz_err * _freq, \
            np.nanmean(action[6]), tr_err, np.nanmean(action[7]), tphi_err, np.nanmean(action[8]), tz_err, \
-           np.nanmean(Rc), np.nanstd(Rc), np.nanmean(E), np.nanstd(E), np.nanmean(E - Ec), np.nanstd(E - Ec)
+           np.nanmean(Rc), np.nanstd(Rc), np.nanmean(E), np.nanstd(E), np.nanmean(E - Ec), np.nanstd(
+        E - Ec), \
+           np.nanmean(sRpz[:, 0]) * _R0, \
+           np.nanmean(sRpz[:, 1]), \
+           np.nanmean(sRpz[:, 2]) * _R0, \
+           np.nanmean(svRvTvz[:, 0]) * _v0, \
+           np.nanmean(svRvTvz[0, 1]) * _v0, \
+           np.nanmean(svRvTvz[:, 2]) * _v0, \
+           galr_err * _R0, \
+           galphi_err, \
+           galz_err * _R0, \
+           galvr_err * _v0, \
+           galvt_err * _v0, \
+           galvz_err * _v0, \
+           galvr_galvt_corr, \
+           galvr_galvz_corr, \
+           galvt_galvz_corr
 
 
 if __name__ == '__main__':  # needed for multiprocessing on Windows
@@ -219,7 +248,22 @@ if __name__ == '__main__':  # needed for multiprocessing on Windows
                                               ('Energy', float),
                                               ('Energy_err', float),
                                               ('EminusEc', float),
-                                              ('EminusEc_err', float)])
+                                              ('EminusEc_err', float),
+                                              ('galr', float),
+                                              ('galphi', float),
+                                              ('galz', float),
+                                              ('galvr', float),
+                                              ('galvt', float),
+                                              ('galvz', float),
+                                              ('galr_err', float),
+                                              ('galphi_err', float),
+                                              ('galz_err', float),
+                                              ('galvr_err', float),
+                                              ('galvt_err', float),
+                                              ('galvz_err', float),
+                                              ('galvr_galvt_corr', float),
+                                              ('galvr_galvz_corr', float),
+                                              ('galvt_galvz_corr', float)])
 
     keys = ['e',
             'e_err',
@@ -261,7 +305,23 @@ if __name__ == '__main__':  # needed for multiprocessing on Windows
             'Energy',
             'Energy_err',
             'EminusEc',
-            'EminusEc_err']
+            'EminusEc_err',
+            'galr',
+            'galphi',
+            'galz',
+            'galvr',
+            'galvt',
+            'galvz',
+            'galr_err',
+            'galphi_err',
+            'galz_err',
+            'galvr_err',
+            'galvt_err',
+            'galvz_err',
+            'galvr_galvt_corr',
+            'galvr_galvz_corr',
+            'galvt_galvz_corr']
+
     rec['source_id'] = source_ids
     rec['APOGEE_ID'] = apogee_ids
     rec['ra'] = ra
