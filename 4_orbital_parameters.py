@@ -113,7 +113,7 @@ def process_single(i):
     vxvv = [ra[i], dec[i], distance[i], pmra[i], pmdec[i], rv[i]]
     if not np.all(np.isfinite(vxvv)) or not np.all(np.isfinite(covariance[i])):
         return np.ones(56) * np.nan
-    samp = np.random.multivariate_normal(vxvv, covariance[i], size=100)
+    samp = np.random.multivariate_normal(vxvv, covariance[i], size=1000)
     if not (np.all(samp[:, 1] < 90.) & np.all(samp[:, 1] > -90.)):
         return np.ones(56) * np.nan
     sXYZ, svxyz, sRpz, svRvTvz = obs_to_galcen(samp[:, 0],
