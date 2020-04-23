@@ -39,7 +39,7 @@ parallax_err = f_gaia['parallax_error']
 distance_err = f_astronn['weighted_dist_error'] / 1e3
 pmra_err = f_gaia['pmra_error']
 pmdec_err = f_gaia['pmdec_error']
-rv_err = allstar_data['vscatter']
+rv_err = allstar_data['verr']
 ra_dec_corr = f_gaia['ra_dec_corr']
 ra_parallax_corr = f_gaia['ra_parallax_corr']
 ra_pmra_corr = f_gaia['ra_pmra_corr']
@@ -84,9 +84,9 @@ covariance[:, 4, 3] = covariance[:, 3, 4]
 def obs_to_galcen(ra, dec, dist, pmra, pmdec, rv, ro=_R0, vo=_v0, zo=_z0):
     vxvv = np.dstack([ra, dec, dist, pmra, pmdec, rv])[0]
     ra, dec = vxvv[:, 0], vxvv[:, 1]
-    lb = bovy_coords.radec_to_lb(ra, dec, degree=True)
+    lb = bovy_coords.radec_to_lb(ra, dec, degree=True, epoch=None)
     pmra, pmdec = vxvv[:, 3], vxvv[:, 4]
-    pmllpmbb = bovy_coords.pmrapmdec_to_pmllpmbb(pmra, pmdec, ra, dec, degree=True)
+    pmllpmbb = bovy_coords.pmrapmdec_to_pmllpmbb(pmra, pmdec, ra, dec, degree=True, epoch=None)
     d, vlos = vxvv[:, 2], vxvv[:, 5]
     rectgal = bovy_coords.sphergal_to_rectgal(lb[:, 0], lb[:, 1], d, vlos, pmllpmbb[:, 0], pmllpmbb[:, 1], degree=True)
     vsolar = np.array([-11.1, 245.7, 7.25])
