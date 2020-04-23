@@ -1,0 +1,19 @@
+Model: Bayesian Convolutional Neural Network 
+Model Type: BCNN 
+astroNN identifier: ApogeeBCNN 
+Python Version: 3.6.5 (default, May  9 2018, 16:41:12) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-11)] 
+astroNN Version: 1.1.dev0 
+Keras Version: 2.1.6-tf 
+Tensorflow Version: 1.12.0 
+Folder Name: astroNN_constant_model_reduced 
+Batch size: 64 
+Optimizer: Adam 
+Maximum Epochs: 40 
+Learning Rate: 0.0005 
+Validation Size: 0.1 
+Input Shape: (7514, 1) 
+Label Shape: 1 
+Number of Training Data: 31601 
+Number of Validation Data: 3511 
+Dropout Rate: 0.3 

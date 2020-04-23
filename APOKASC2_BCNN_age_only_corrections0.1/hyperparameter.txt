@@ -1,0 +1,19 @@
+Model: Bayesian Convolutional Neural Network 
+Model Type: BCNN 
+astroNN identifier: ApogeeBCNN 
+Python Version: 3.6.4 |Anaconda custom (64-bit)| (default, Jan 16 2018, 18:10:19) 
+[GCC 7.2.0] 
+astroNN Version: 1.1.dev0 
+Keras Version: 2.1.5 
+Tensorflow Version: 1.6.0 
+Folder Name: APOKASC2_BCNN_age_only_corrections0.1 
+Batch size: 32 
+Optimizer: Adam 
+Maximum Epochs: 200 
+Learning Rate: 0.0005 
+Validation Size: 0.1 
+Input Shape: (7514, 1) 
+Label Shape: 26 
+Number of Training Data: 5374 
+Number of Validation Data: 597 
+Dropout Rate: 0.3 
