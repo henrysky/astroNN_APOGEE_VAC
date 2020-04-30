@@ -23,6 +23,7 @@ allstar_data = fits.getdata(allstar_path)
 
 allspec_f = fits.open(contspac_file_name)
 all_spec = allspec_f[0].data
+bad_spec_idx = np.all(all_spec == 0., axis=1)
 
 # ====================================== Abundances ====================================== #
 
@@ -30,10 +31,14 @@ net = load_folder(astronn_chem_model)
 
 pred, pred_error = net.test(all_spec)
 
-# some spectra are all zeros and deal with infinite error issue, set prediction for those spectra to np.nan
-bad_spec_idx = (np.all(all_spec == 0., axis=1) | np.array([pred_error['total'] == np.inf])[0])
+# some spectra are all zeros, set prediction for those spectra to np.nan
 pred[bad_spec_idx] = np.nan
 pred_error['total'][bad_spec_idx] = np.nan
+
+# deal with infinite error issue, set them to np.nan
+inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
+pred[inf_err_idx] = np.nan
+pred_error['total'][inf_err_idx] = np.nan
 
 # save a fits
 columns_list = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
