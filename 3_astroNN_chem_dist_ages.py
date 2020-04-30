@@ -162,10 +162,15 @@ net = load_folder(astronn_age_model)
 pred, pred_error = net.test(all_spec)
 
 # some spectra are all zeros, set prediction for those spectra to NaN
-bad_age_idx = (np.all(all_spec == 0., axis=1) | (np.array([pred_error['total'] == np.inf])[0]))
-pred[bad_age_idx] = np.nan
-pred_error['total'][bad_age_idx] = np.nan
-pred_error['model'][bad_age_idx] = np.nan
+pred[np.all(all_spec == 0., axis=1)] = np.nan
+pred_error['total'][np.all(all_spec == 0., axis=1)] = np.nan
+pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
+
+# deal with infinite error issue if it exists, set them to NaN
+inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
+pred[inf_err_idx] = np.nan
+pred_error['total'][inf_err_idx] = np.nan
+pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
 
 f_apokasc2 = h5py.File("APOKASC2.h5", 'r')
 
