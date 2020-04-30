@@ -5,7 +5,8 @@ import tqdm
 import numpy as np
 import multiprocessing
 from astropy.io import fits
-from galpy.util import bovy_coords, bovy_conversion
+from galpy.orbit import Orbit
+from galpy.util import bovy_conversion
 from galpy.actionAngle import actionAngleStaeckel, estimateDeltaStaeckel
 from galpy.potential import MWPotential2014, evaluatePotentials, rl
 
@@ -27,7 +28,7 @@ apogee_ids = f_astronn['APOGEE_ID']
 ra = f_gaia['ra']
 dec = f_gaia['dec']
 parallax = f_gaia['parallax']
-distance = f_astronn['weighted_dist'] / 1e3
+distance = f_astronn['weighted_dist'] / 1e3  # pc to kpc
 pmra = f_gaia['pmra']
 pmdec = f_gaia['pmdec']
 rv = allstar_data['vhelio_avg']
@@ -36,7 +37,7 @@ rv = allstar_data['vhelio_avg']
 ra_err = f_gaia['ra_error']
 dec_err = f_gaia['dec_error']
 parallax_err = f_gaia['parallax_error']
-distance_err = f_astronn['weighted_dist_error'] / 1e3
+distance_err = f_astronn['weighted_dist_error'] / 1e3  # pc to kpc
 pmra_err = f_gaia['pmra_error']
 pmdec_err = f_gaia['pmdec_error']
 rv_err = allstar_data['verr']
@@ -81,34 +82,6 @@ covariance[:, 4, 2] = covariance[:, 2, 4]
 covariance[:, 4, 3] = covariance[:, 3, 4]
 
 
-def obs_to_galcen(ra, dec, dist, pmra, pmdec, rv, ro=_R0, vo=_v0, zo=_z0):
-    vxvv = np.dstack([ra, dec, dist, pmra, pmdec, rv])[0]
-    ra, dec = vxvv[:, 0], vxvv[:, 1]
-    lb = bovy_coords.radec_to_lb(ra, dec, degree=True, epoch=None)
-    pmra, pmdec = vxvv[:, 3], vxvv[:, 4]
-    pmllpmbb = bovy_coords.pmrapmdec_to_pmllpmbb(pmra, pmdec, ra, dec, degree=True, epoch=None)
-    d, vlos = vxvv[:, 2], vxvv[:, 5]
-    rectgal = bovy_coords.sphergal_to_rectgal(lb[:, 0], lb[:, 1], d, vlos, pmllpmbb[:, 0], pmllpmbb[:, 1], degree=True)
-    vsolar = np.array([-11.1, 245.7, 7.25])
-    vsun = vsolar / vo
-    X = rectgal[:, 0] / ro
-    Y = rectgal[:, 1] / ro
-    Z = rectgal[:, 2] / ro
-    vx = rectgal[:, 3] / vo
-    vy = rectgal[:, 4] / vo
-    vz = rectgal[:, 5] / vo
-    XYZ = np.dstack([X, Y, Z])[0]
-    vxyz = np.dstack([vx, vy, vz])[0]
-    Rpz = bovy_coords.XYZ_to_galcencyl(XYZ[:, 0], XYZ[:, 1], XYZ[:, 2], Zsun=zo / ro)
-    vRvTvz = bovy_coords.vxvyvz_to_galcencyl(vxyz[:, 0], vxyz[:, 1], vxyz[:, 2], Rpz[:, 0], Rpz[:, 1], Rpz[:, 2],
-                                             vsun=vsun,
-                                             Xsun=1.,
-                                             Zsun=zo / ro,
-                                             galcen=True)
-
-    return XYZ, vxyz, Rpz, vRvTvz
-
-
 def process_single(i):
     vxvv = [ra[i], dec[i], distance[i], pmra[i], pmdec[i], rv[i]]
     if not np.all(np.isfinite(vxvv)) or not np.all(np.isfinite(covariance[i])):
@@ -116,15 +89,14 @@ def process_single(i):
     samp = np.random.multivariate_normal(vxvv, covariance[i], size=1000)
     if not (np.all(samp[:, 1] < 90.) & np.all(samp[:, 1] > -90.)):
         return np.ones(56) * np.nan
-    sXYZ, svxyz, sRpz, svRvTvz = obs_to_galcen(samp[:, 0],
-                                               samp[:, 1],
-                                               samp[:, 2],
-                                               samp[:, 3],
-                                               samp[:, 4],
-                                               samp[:, 5],
-                                               ro=_R0,
-                                               vo=_v0,
-                                               zo=_z0)
+
+    os = Orbit(np.array([samp[:, 0], samp[:, 1], samp[:, 2], samp[:, 3], samp[:, 4], samp[:, 5]]).T, radec=True,ro=_R0,
+               vo=_v0, zo=_z0, solarmotion=[-11.1, 25.7, 7.25])
+
+    sXYZ = np.dstack([os.x(), os.y(), os.z()])[0] / _R0
+    sRpz = np.dstack([os.R() / _R0, os.phi(), os.z() / _R0])[0]
+    svRvTvz = np.dstack([os.vR(), os.vT(), os.vz()])[0] / _v0
+
     deltas = estimateDeltaStaeckel(MWPotential2014, np.median(sRpz[:, 0]), np.median(sRpz[:, 2]), no_median=True)
     aAS = actionAngleStaeckel(pot=MWPotential2014, delta=np.mean(deltas))
     e, zmax, rperi, rap = aAS.EccZmaxRperiRap(sRpz[:, 0],
@@ -153,8 +125,7 @@ def process_single(i):
 
     Rc = np.array([rl(MWPotential2014, lz) for lz in action[1]]) * _R0
     Ec = (evaluatePotentials(MWPotential2014, Rc, 0.) + 0.5 * (action[1]) ** 2. / Rc ** 2.) * _v0 ** 2
-    E = (evaluatePotentials(MWPotential2014, sRpz[:, 0], sRpz[:, 2], phi=sRpz[:, 1]) + np.sum(svRvTvz ** 2 / 2.,
-                                                                                              axis=1)) * _v0 ** 2
+    E = os.E(pot=MWPotential2014)
 
     # galactocentric coord and vel uncertainty
     galcen_tcov = np.cov(np.dstack([sRpz[:, 0], sRpz[:, 1], sRpz[:, 2]])[0].T)
@@ -169,18 +140,58 @@ def process_single(i):
     galvr_galvz_corr = galcenv_tcov[0, 2] / (galcenv_errs[0] * galcenv_errs[2])
     galvt_galvz_corr = galcenv_tcov[1, 2] / (galcenv_errs[1] * galcenv_errs[2])
 
-    return np.nanmean(e), e_err, np.nanmean(zmax) * _R0, zmax_err * _R0, np.nanmean(
-        rperi) * _R0, rperi_err * _R0, np.nanmean(rap) * _R0, rap_err * _R0, \
-           e_zmax_corr, e_rperi_corr, e_rap_corr, zmax_rperi_corr, zmax_rap_corr, rperi_rap_corr, \
-           np.nanmean(action[0]) * _R0 * _v0, jr_err * _R0 * _v0, np.nanmean(
-        action[1]) * _R0 * _v0, lz_err * _R0 * _v0, np.nanmean(action[2]) * _R0 * _v0, jz_err * _R0 * _v0, \
-           jr_lz_corr, jr_jz_corr, lz_jz_corr, \
-           np.nanmean(action[3]) * _freq, or_err * _freq, np.nanmean(action[4]) * _freq, op_err * _freq, np.nanmean(
-        action[5]) * _freq, oz_err * _freq, \
-           np.nanmean(action[6]), tr_err, np.nanmean(action[7]), tphi_err, np.nanmean(action[8]), tz_err, \
-           np.nanmean(Rc), np.nanstd(Rc), np.nanmean(E), np.nanstd(E), np.nanmean(E - Ec), np.nanstd(
-        E - Ec), \
-           np.nanmean(sRpz[:, 0]) * _R0, \
+    # galr mean to avoid issue near GC, error propagation
+    x_mean = np.nanmean(sXYZ[:, 0])
+    y_mean = np.nanmean(sXYZ[:, 1])
+    x_err = np.nanstd(sXYZ[:, 0])
+    y_err = np.nanstd(sXYZ[:, 1])
+    x_err_percentage = x_err / np.nanmean(sXYZ[:, 0])
+    y_err_percentage = y_err / np.nanmean(sXYZ[:, 1])
+    x2_err = (x_mean ** 2) * (2 * x_err_percentage)
+    y2_err = (y_mean ** 2) * (2 * y_err_percentage)
+    galr = np.sqrt(x_mean ** 2 + y_mean ** 2)
+    galr2_err = np.sqrt(x2_err**2 + y2_err**2)
+    galr2_err_percentage = galr2_err / galr
+    galr_err = galr * (0.5 * galr2_err_percentage)
+    return np.nanmean(e), \
+           e_err, \
+           np.nanmean(zmax) * _R0, \
+           zmax_err * _R0, \
+           np.nanmean(rperi) * _R0, \
+           rperi_err * _R0, \
+           np.nanmean(rap) * _R0, \
+           rap_err * _R0, \
+           e_zmax_corr, \
+           e_rperi_corr, \
+           e_rap_corr, \
+           zmax_rperi_corr, \
+           zmax_rap_corr, \
+           rperi_rap_corr, \
+           np.nanmean(action[0]) * _R0 * _v0, \
+           jr_err * _R0 * _v0, \
+           np.nanmean(action[1]) * _R0 * _v0, \
+           lz_err * _R0 * _v0, \
+           np.nanmean(action[2]) * _R0 * _v0, \
+           jz_err * _R0 * _v0, \
+           jr_lz_corr, \
+           jr_jz_corr, \
+           lz_jz_corr, \
+           np.nanmean(action[3]) * _freq, or_err * _freq, \
+           np.nanmean(action[4]) * _freq, op_err * _freq, \
+           np.nanmean(action[5]) * _freq, oz_err * _freq, \
+           np.nanmean(action[6]), \
+           tr_err, \
+           np.nanmean(action[7]), \
+           tphi_err, \
+           np.nanmean(action[8]), \
+           tz_err, \
+           np.nanmean(Rc), \
+           np.nanstd(Rc), \
+           np.nanmean(E), \
+           np.nanstd(E), \
+           np.nanmean(E - Ec), \
+           np.nanstd(E - Ec), \
+           galr * _R0, \
            np.nanmean(sRpz[:, 1]), \
            np.nanmean(sRpz[:, 2]) * _R0, \
            np.nanmean(svRvTvz[:, 0]) * _v0, \

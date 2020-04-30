@@ -23,7 +23,6 @@ allstar_data = fits.getdata(allstar_path)
 
 allspec_f = fits.open(contspac_file_name)
 all_spec = allspec_f[0].data
-bad_spec_idx = np.all(all_spec == 0., axis=1)
 
 # ====================================== Abundances ====================================== #
 
@@ -31,14 +30,10 @@ net = load_folder(astronn_chem_model)
 
 pred, pred_error = net.test(all_spec)
 
-# some spectra are all zeros, set prediction for those spectra to np.nan
+# some spectra are all zeros and deal with infinite error issue, set prediction for those spectra to np.nan
+bad_spec_idx = (np.all(all_spec == 0., axis=1) | np.array([pred_error['total'] == np.inf])[0])
 pred[bad_spec_idx] = np.nan
 pred_error['total'][bad_spec_idx] = np.nan
-
-# deal with infinite error issue, set them to np.nan
-inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
-pred[inf_err_idx] = np.nan
-pred_error['total'][inf_err_idx] = np.nan
 
 # save a fits
 columns_list = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
@@ -92,6 +87,9 @@ nn_dist_model_err[bad_idx] = np.nan
 nn_parallax[bad_idx] = np.nan
 nn_parallax_err[bad_idx] = np.nan
 nn_parallax_model_err[bad_idx] = np.nan
+pred[:, 0][bad_idx] = np.nan
+pred_err['total'][bad_idx] = np.nan
+pred_err['model'][bad_idx] = np.nan
 
 deno = ((1. / nn_parallax_model_err ** 2) + (1. / apogeegaia_file['parallax_error'] ** 2))
 weighted_parallax = ((nn_parallax / nn_parallax_model_err ** 2) + (
@@ -159,15 +157,10 @@ net = load_folder(astronn_age_model)
 pred, pred_error = net.test(all_spec)
 
 # some spectra are all zeros, set prediction for those spectra to NaN
-pred[np.all(all_spec == 0., axis=1)] = np.nan
-pred_error['total'][np.all(all_spec == 0., axis=1)] = np.nan
-pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
-
-# deal with infinite error issue if it exists, set them to NaN
-inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
-pred[inf_err_idx] = np.nan
-pred_error['total'][inf_err_idx] = np.nan
-pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
+bad_age_idx = (np.all(all_spec == 0., axis=1) | (np.array([pred_error['total'] == np.inf])[0]))
+pred[bad_age_idx] = np.nan
+pred_error['total'][bad_age_idx] = np.nan
+pred_error['model'][bad_age_idx] = np.nan
 
 f_apokasc2 = h5py.File("APOKASC2.h5", 'r')
 

@@ -20,7 +20,6 @@ f_orbitparams = fits.getdata(galpy_orbitparams_f)
 c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
      fits.Column(name='LOCATION_ID', array=allstar_data['LOCATION_ID'], format="J"),
      fits.Column(name='TELESCOPE', array=allstar_data['TELESCOPE'], format="8A"),
-     fits.Column(name='FIELD', array=allstar_data['FIELD'], format="19A"),
      fits.Column(name='RA_APOGEE', array=allstar_data['RA'], format='D'),
      fits.Column(name='DEC_APOGEE', array=allstar_data['DEC'], format='D'),
      fits.Column(name='TEFF', array=f_chem['astroNN'][:, 0], format='E'),
@@ -89,6 +88,7 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
 
      fits.Column(name='age', array=f_ages['age'], format='D'),
      fits.Column(name='age_linear_correct', array=f_ages['age_linear_correct'], format='D'),
+     fits.Column(name='age_lowess_correct', array=f_ages['age_lowess_correct'], format='D'),
      fits.Column(name='age_total_error', array=f_ages['age_total_error'], format='D'),
      fits.Column(name='age_model_error', array=f_ages['age_model_error'], format='D'),
      fits.Column(name='source_id', array=f_gaia['source_id'], format='K'),
@@ -146,8 +146,8 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='theta_z_err', array=f_orbitparams['theta_z_err'], format='D'),
      fits.Column(name='rl', array=f_orbitparams['rl'], format='D'),
      fits.Column(name='rl_err', array=f_orbitparams['rl_err'], format='D'),
-     fits.Column(name='Energy', array=f_orbitparams['E'], format='D'),
-     fits.Column(name='Energy_err', array=f_orbitparams['E_err'], format='D'),
+     fits.Column(name='Energy', array=f_orbitparams['Energy'], format='D'),
+     fits.Column(name='Energy_err', array=f_orbitparams['Energy_err'], format='D'),
      fits.Column(name='EminusEc', array=f_orbitparams['EminusEc'], format='D'),
      fits.Column(name='EminusEc_err', array=f_orbitparams['EminusEc_err'], format='D')]
 
