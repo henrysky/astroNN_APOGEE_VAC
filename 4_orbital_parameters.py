@@ -151,7 +151,7 @@ def process_single(i):
     y2_err = (y_mean ** 2) * (2 * y_err_percentage)
     galr = np.sqrt(x_mean ** 2 + y_mean ** 2)
     galr2_err = np.sqrt(x2_err**2 + y2_err**2)
-    galr2_err_percentage = galr2_err / galr
+    galr2_err_percentage = galr2_err / (galr**2)
     galr_err = galr * (0.5 * galr2_err_percentage)
     return np.nanmean(e), \
            e_err, \
