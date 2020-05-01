@@ -35,12 +35,15 @@ Please run the scripts in ASCENDING ORDER
     | This script uses galpy to generate orbital parameters and save them to fits
 -   | `5_compile_vac.py`_
     | This script uses all the fits files we have generated and compile VAC
+-   | `6_diagnostic_plots.py`_
+    | This script make some summary plots for the VAC
 
 .. _1_continuum_norm.py: 1_continuum_norm.py
 .. _2_gaia_xmatch.py: 2_gaia_xmatch.py
 .. _3_astroNN_chem_dist_ages.py: 3_astroNN_chem_dist_ages.py
 .. _4_orbital_parameters.py: 4_orbital_parameters.py
 .. _5_compile_vac.py: 5_compile_vac.py
+.. _6_diagnostic_plots.py: 6_diagnostic_plots.py
 
 Major Authors
 ---------------
