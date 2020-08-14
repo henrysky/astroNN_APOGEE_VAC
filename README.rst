@@ -8,7 +8,7 @@ astroNN DR16 VAC: https://www.sdss.org/dr16/data_access/value-added-catalogs/?va
 Requirement
 ---------------
 
-``python>=3.6``, ``numpy``, ``scipy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``, ``pyyaml``, ``statsmodels``, ``h5py``
+``python>=3.6``, ``numpy``, ``scipy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``, ``pyyaml``, ``statsmodels``, ``h5py``, ``gaia_tools``
 
 Scripts
 ---------
@@ -25,6 +25,8 @@ Please review the configurations stored in the following following files before 
 
 Please run the scripts in ASCENDING ORDER
 
+-   | `0_dr14_reference_contspec.py`_
+    | This script continuum normalizing the original data set that the models trained on (aka dr14)
 -   | `1_continuum_norm.py`_
     | This script continuum normalizing all the APOGEE spectra and save them to a single fits
 -   | `2_gaia_xmatch.py`_
@@ -38,6 +40,7 @@ Please run the scripts in ASCENDING ORDER
 -   | `6_diagnostic_plots.py`_
     | This script make some summary plots for the VAC
 
+.. _0_dr14_reference_contspec.py: 0_dr14_reference_contspec.py
 .. _1_continuum_norm.py: 1_continuum_norm.py
 .. _2_gaia_xmatch.py: 2_gaia_xmatch.py
 .. _3_astroNN_chem_dist_ages.py: 3_astroNN_chem_dist_ages.py
