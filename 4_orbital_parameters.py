@@ -153,6 +153,13 @@ def process_single(i):
     galr2_err = np.sqrt(x2_err**2 + y2_err**2)
     galr2_err_percentage = galr2_err / (galr**2)
     galr_err = galr * (0.5 * galr2_err_percentage)
+
+    # galphi mean to avoid issue near GC, error propagation
+    galphi = np.arctan(y_mean/x_mean)
+    galphi_err_x = (y_mean / (x_mean ** 2 + y_mean ** 2)) * x_err  # error propagation from x_mean
+    galphi_err_y = (-x_mean / (x_mean ** 2 + y_mean ** 2)) * y_err  # error propagation from y_mean
+    galphi_err = np.sqrt(galphi_err_x**2 + galphi_err_y**2)  # add them up
+
     return np.nanmean(e), \
            e_err, \
            np.nanmean(zmax) * _R0, \
@@ -192,7 +199,7 @@ def process_single(i):
            np.nanmean(E - Ec), \
            np.nanstd(E - Ec), \
            galr * _R0, \
-           np.nanmean(sRpz[:, 1]), \
+           galphi, \
            np.nanmean(sRpz[:, 2]) * _R0, \
            np.nanmean(svRvTvz[:, 0]) * _v0, \
            np.nanmean(svRvTvz[0, 1]) * _v0, \
