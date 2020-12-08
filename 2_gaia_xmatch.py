@@ -76,7 +76,9 @@ nu_eff_used_in_astrometry = np.ones(ra_apogee.shape[0]) * np.nan
 astrometric_params_solved = np.ones(ra_apogee.shape[0]) * np.nan
 ecl_lat = np.ones(ra_apogee.shape[0]) * np.nan
 ruwe = np.ones(ra_apogee.shape[0]) * np.nan
-
+ipd_gof_harmonic_amplitude = np.ones(ra_apogee.shape[0]) * np.nan
+ipd_frac_multi_peak = np.ones(ra_apogee.shape[0]) * np.nan
+phot_bp_rp_excess_factor = np.ones(ra_apogee.shape[0]) * np.nan
 
 ra[gaia_matched_idx] = xmatched_allcolumns['ra']
 dec[gaia_matched_idx] = xmatched_allcolumns['dec']
@@ -116,6 +118,9 @@ nu_eff_used_in_astrometry[gaia_matched_idx] = xmatched_allcolumns['nu_eff_used_i
 astrometric_params_solved[gaia_matched_idx] = xmatched_allcolumns['astrometric_params_solved']
 ecl_lat[gaia_matched_idx] = xmatched_allcolumns['ecl_lat']
 ruwe[gaia_matched_idx] = xmatched_allcolumns['ruwe']
+ipd_gof_harmonic_amplitude[gaia_matched_idx] = xmatched_allcolumns['ipd_gof_harmonic_amplitude']
+ipd_frac_multi_peak[gaia_matched_idx] = xmatched_allcolumns['ipd_frac_multi_peak']
+phot_bp_rp_excess_factor[gaia_matched_idx] = xmatched_allcolumns['ipd_frac_multi_peak']
 
 col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
        fits.Column(name='LOCATION_ID', array=allstar_data['LOCATION_ID'], format="J"),
@@ -156,7 +161,10 @@ col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18
        fits.Column(name='nu_eff_used_in_astrometry', array=nu_eff_used_in_astrometry, format='D'),
        fits.Column(name='astrometric_params_solved', array=astrometric_params_solved, format='D'),
        fits.Column(name='ecl_lat', array=ecl_lat, format='D'),
-       fits.Column(name='ruwe', array=ruwe, format='D')]
+       fits.Column(name='ruwe', array=ruwe, format='D'),
+       fits.Column(name='ipd_gof_harmonic_amplitude', array=ipd_gof_harmonic_amplitude, format='D'),
+       fits.Column(name='ipd_frac_multi_peak', array=ipd_frac_multi_peak, format='D'),
+       fits.Column(name='phot_bp_rp_excess_factor', array=phot_bp_rp_excess_factor, format='D')]
 
 t = fits.BinTableHDU.from_columns(col)
 t.writeto(gaia_rowmatch_f)
