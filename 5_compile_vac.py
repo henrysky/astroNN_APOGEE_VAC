@@ -80,10 +80,13 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='DEC', array=f_gaia['DEC'], format='D'),
      fits.Column(name='pmra', array=f_gaia['pmra'], format='D'),
      fits.Column(name='pmra_error', array=f_gaia['pmra_error'], format='D'),
+     fits.Column(name='ref_epoch', array=f_gaia['ref_epoch'], format='D'),  # new in DR3
+     fits.Column(name='dr2_source_id', array=f_gaia['dr2_source_id'], format='K'),  # new in DR3
      fits.Column(name='pmdec', array=f_gaia['pmdec'], format='D'),
      fits.Column(name='pmdec_error', array=f_gaia['pmdec_error'], format='D'),
      fits.Column(name='phot_g_mean_mag', array=f_gaia['phot_g_mean_mag'], format='D'),
      fits.Column(name='bp_rp', array=f_gaia['bp_rp'], format='D'),
+     fits.Column(name='g_rp', array=f_gaia['g_rp'], format='D'),  # new in DR3
      fits.Column(name='VHELIO_AVG', array=allstar_data['VHELIO_AVG'], format='E'),
 
      fits.Column(name='age', array=f_ages['age'], format='D'),
