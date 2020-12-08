@@ -8,7 +8,7 @@ _v0 = 220.  # sun tangential velocity in km/x
 _z0 = 0.0208  # sun above galactic plane in kpc
 
 # gaia table to use to cross matching
-gaia_table_name = "gaiadr2.gaia_source"
+gaia_table_name = "gaiaedr3.gaia_source"
 
 # path to the reference allstar (which is dr14 the models are trained on)
 allstar14_path = allstar(dr=14)
@@ -23,8 +23,8 @@ base14_path = "/yngve_data/sdss/apogee/dr14/apogee/spectro/redux/r8/stars"
 corr_flag = True
 
 # path to your current allstar
-allstar_path = "/yngve_data/sdss/apogee/dr16/apogee/spectro/aspcap/r12/l33/allStar-r12-l33.fits"
-# allstar_path = "C:/sdss_local/dr16/apogee/spectro/aspcap/r12/l33/allStar-r12-l33.fits"  # path on my windows
+# allstar_path = "/yngve_data/sdss/apogee/apogeework/apogee/spectro/aspcap/r13/l33/allStar-r13-l33-58932beta.fits"
+allstar_path = "allStar-r13-l33-58932beta.fits"  # path on my windows
 
 # base path to apStar/asStar files
 base_path = "/yngve_data/sdss/apogee/dr16/apogee/spectro/redux/r12/stars"
@@ -34,22 +34,21 @@ base_path = "/yngve_data/sdss/apogee/dr16/apogee/spectro/redux/r12/stars"
 contspac_file_name = "contspec_dr16.fits"
 
 # file name for gaia all column, can be a path if file is not stored in current dir
-gaia_allcolumns_f = "apogeedr16_gaiadr2_xmatch_allcolumns.fits"
-
+gaia_allcolumns_f = "apogeedr17_gaiaedr3_xmatch_allcolumns.fits"
 # file name for gaia selected columns but row matched to allstar, can be a path if file is not stored in current dir
-gaia_rowmatch_f = "apogeedr16_gaiadr2_xmatch.fits"
+gaia_rowmatch_f = "apogeedr17_gaiaedr3_xmatch.fits"
 
 # file name for astroNN abundances, can be a path if file is not stored in current dir
-astronn_chem_f = "astroNN_dr16_nn_chem.fits"
+astronn_chem_f = "astroNN_dr17_nn_chem.fits"
 
 # file name for astroNN distances, can be a path if file is not stored in current dir
-astronn_dist_f = "apogee_dr16_nn_dist.fits"
+astronn_dist_f = "apogee_dr17_edr3_nn_dist.fits"
 
 # file name for astroNN ages, can be a path if file is not stored in current dir
-astronn_ages_f = "apogee_dr16_nn_ages.fits"
+astronn_ages_f = "apogee_dr17_nn_ages.fits"
 
 # file name for astroNN ages, can be a path if file is not stored in current dir
-galpy_orbitparams_f = "apogee_dr16_orbitparams.fits"
+galpy_orbitparams_f = "apogee_dr17_orbitparams_edr3.fits"
 
 # neural network models folders name, can be a path if file is not stored in current dir
 astronn_chem_model = "astroNN_0617_run001"  # https://github.com/henrysky/astroNN_spectra_paper_figures/
@@ -57,4 +56,4 @@ astronn_dist_model = "astroNN_constant_model_reduced"  # https://github.com/henr
 astronn_age_model = "APOKASC2_BCNN_age_only_corrections0.1"
 
 # file name for astroNN APGOEE VAC, can be a path if file is not stored in current dir
-astronn_apogee_vac_f = "apogee_astroNN-DR16.fits"
+astronn_apogee_vac_f = "apogee_astroNN-DR17_edr3.fits"

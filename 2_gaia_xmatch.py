@@ -6,18 +6,20 @@ from astropy.io import fits
 from astropy.table import Table
 from astroquery.gaia import Gaia
 from config import allstar_path, gaia_allcolumns_f, gaia_rowmatch_f, gaia_table_name
+from utils import dr2source_dr3source
 
 # open apogee allstar
 allstar_data = fits.getdata(allstar_path)
 ra_apogee = allstar_data['ra']
-gaia_matched_idx = np.where(allstar_data['GAIA_SOURCE_ID'] != 0)
+dr3_source_id = dr2source_dr3source(allstar_data['GAIA_SOURCE_ID'])
+
+gaia_matched_idx = np.where(dr3_source_id > 1)
 
 # try to login if any
 if os.stat("gaia_credential").st_size != 0:
        Gaia.login(credentials_file='gaia_credential')
 
-t = Table({'source_id':allstar_data['GAIA_SOURCE_ID']})
-t.write('temptable.xml', format='votable')
+t = Table({'source_id': dr3_source_id})
 
 # launching job at https://gea.esac.esa.int/archive/
 job = Gaia.launch_job_async(
@@ -26,15 +28,12 @@ job = Gaia.launch_job_async(
     from {gaia_table_name} as g 
     inner join tap_upload.my_table as m on m.source_id = g.source_id
     """,
-    upload_resource='temptable.xml',
+    upload_resource=t,
     upload_table_name="my_table")
-
-os.remove('temptable.xml')
-
 
 # parse job result and save
 gaia2_matches = job.results
-gaia2_matches.remove_columns(['datalink_url', 'epoch_photometry_url', 'designation', 'phot_variable_flag'])
+gaia2_matches.remove_columns(['designation'])
 gaia2_matches.write(gaia_allcolumns_f)
 
 # prepare the row matching allstar-gaia
@@ -67,6 +66,17 @@ pmdec_error = np.ones(ra_apogee.shape[0]) * np.nan
 phot_g_mean_mag = np.ones(ra_apogee.shape[0]) * np.nan
 bp_rp = np.ones(ra_apogee.shape[0]) * np.nan
 source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
+dr2_source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
+# new in EDR3
+bp_g = np.ones(ra_apogee.shape[0]) * np.nan
+g_rp = np.ones(ra_apogee.shape[0]) * np.nan
+pseudocolour = np.ones(ra_apogee.shape[0]) * np.nan
+pseudocolour_error = np.ones(ra_apogee.shape[0]) * np.nan
+nu_eff_used_in_astrometry = np.ones(ra_apogee.shape[0]) * np.nan
+astrometric_params_solved = np.ones(ra_apogee.shape[0]) * np.nan
+ecl_lat = np.ones(ra_apogee.shape[0]) * np.nan
+ruwe = np.ones(ra_apogee.shape[0]) * np.nan
+
 
 ra[gaia_matched_idx] = xmatched_allcolumns['ra']
 dec[gaia_matched_idx] = xmatched_allcolumns['dec']
@@ -95,6 +105,17 @@ pmdec_error[gaia_matched_idx] = xmatched_allcolumns['pmdec_error']
 phot_g_mean_mag[gaia_matched_idx] = xmatched_allcolumns['phot_g_mean_mag']
 bp_rp[gaia_matched_idx] = xmatched_allcolumns['bp_rp']
 source_id[gaia_matched_idx] = xmatched_allcolumns['source_id']
+dr2_source_id[allstar_data["GAIA_SOURCE_ID"] > 1] = \
+       allstar_data["GAIA_SOURCE_ID"][allstar_data["GAIA_SOURCE_ID"] > 1]
+# new in EDR3
+bp_g[gaia_matched_idx] = xmatched_allcolumns['bp_g']
+g_rp[gaia_matched_idx] = xmatched_allcolumns['g_rp']
+pseudocolour[gaia_matched_idx] = xmatched_allcolumns['pseudocolour']
+pseudocolour_error[gaia_matched_idx] = xmatched_allcolumns['pseudocolour_error']
+nu_eff_used_in_astrometry[gaia_matched_idx] = xmatched_allcolumns['nu_eff_used_in_astrometry']
+astrometric_params_solved[gaia_matched_idx] = xmatched_allcolumns['astrometric_params_solved']
+ecl_lat[gaia_matched_idx] = xmatched_allcolumns['ecl_lat']
+ruwe[gaia_matched_idx] = xmatched_allcolumns['ruwe']
 
 col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
        fits.Column(name='LOCATION_ID', array=allstar_data['LOCATION_ID'], format="J"),
@@ -126,7 +147,16 @@ col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18
        fits.Column(name='pmdec_error', array=pmdec_error, format='D'),
        fits.Column(name='phot_g_mean_mag', array=phot_g_mean_mag, format='D'),
        fits.Column(name='bp_rp', array=bp_rp, format='D'),
-       fits.Column(name='source_id', array=source_id, format='K')]
+       fits.Column(name='bp_g', array=bp_g, format='D'),
+       fits.Column(name='g_rp', array=g_rp, format='D'),
+       fits.Column(name='source_id', array=source_id, format='K'),
+       fits.Column(name='dr2_source_id', array=allstar_data["GAIA_SOURCE_ID"], format='K'),
+       fits.Column(name='pseudocolour', array=pseudocolour, format='D'),
+       fits.Column(name='pseudocolour_error', array=pseudocolour_error, format='D'),
+       fits.Column(name='nu_eff_used_in_astrometry', array=nu_eff_used_in_astrometry, format='D'),
+       fits.Column(name='astrometric_params_solved', array=astrometric_params_solved, format='D'),
+       fits.Column(name='ecl_lat', array=ecl_lat, format='D'),
+       fits.Column(name='ruwe', array=ruwe, format='D')]
 
 t = fits.BinTableHDU.from_columns(col)
 t.writeto(gaia_rowmatch_f)

@@ -19,9 +19,12 @@ Please review the configurations stored in the following following files before 
     | Global configuration for the scripts
 -   | `gaia_credential`_
     | Gaia login if you have any
+-   | `utils.py`_
+    | Contains a few useful utility functions
 
 .. _config.py: config.py
 .. _gaia_credential: gaia_credential
+.. _utils.py: utils.py
 
 Please run the scripts in ASCENDING ORDER
 

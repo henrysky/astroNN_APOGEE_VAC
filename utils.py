@@ -4,7 +4,7 @@ from astropy.table import Table
 from astroquery.gaia import Gaia
 
 
-def dr2source_edr3source(dr2_source_id):
+def dr2source_dr3source(dr2_source_id, neighbourhood_table="gaiaedr3.dr2_neighbourhood"):
     """
     This function will find the best EDR3 source id match provided in the table `gaiaedr3.dr2_neighbourhood`
 
@@ -12,7 +12,6 @@ def dr2source_edr3source(dr2_source_id):
 
     :return: row-matched DR3 source id, otherwise 0
     """
-    neighbourhood_table = "gaiaedr3.dr2_neighbourhood"
     t = Table({'source_id': np.unique(dr2_source_id)})
 
     # try to login if any
