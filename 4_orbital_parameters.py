@@ -155,7 +155,7 @@ def process_single(i):
     galr_err = galr * (0.5 * galr2_err_percentage)
 
     # galphi mean to avoid issue near GC, error propagation
-    galphi = np.arctan(y_mean/x_mean)
+    galphi = np.arctan2(y_mean, x_mean)
     galphi_err_x = (y_mean / (x_mean ** 2 + y_mean ** 2)) * x_err  # error propagation from x_mean
     galphi_err_y = (-x_mean / (x_mean ** 2 + y_mean ** 2)) * y_err  # error propagation from y_mean
     galphi_err = np.sqrt(galphi_err_x**2 + galphi_err_y**2)  # add them up
