@@ -25,6 +25,7 @@ def apstar_normalization(spectra, spectra_err, _spec_mask):
 
 total_num = allstar_data['RA'].shape[0]
 spec = np.zeros((total_num, 7514), dtype=np.float32)
+good_flag = np.zeros(total_num, dtype=int)  # flag to indicate spectra exist (not all zeros)
 
 for counter in tqdm.tqdm(range(0, total_num)):
     if allstar_data['LOCATION_ID'][counter] == 1:
@@ -47,10 +48,13 @@ for counter in tqdm.tqdm(range(0, total_num)):
         if not np.all(_spec == 0.):
             _spec, _spec_err = apstar_normalization(_spec, _spec_err, _spec_mask)
             spec[counter] = _spec
+            good_flag[counter] = 1
 
 # save a fits
 hdu = fits.PrimaryHDU(spec)
-hdu.writeto(contspac_file_name)
+flag_hdu = fits.ImageHDU(good_flag)
+hdul = fits.HDUList([hdu, flag_hdu])
+hdul.writeto(contspac_file_name)
 
 if corr_flag:
     allstar_dr14_data = fits.getdata(allstar14_path)
@@ -88,4 +92,6 @@ if corr_flag:
 
     # save a fits
     hdu = fits.PrimaryHDU(spec)
-    hdu.writeto(contspac_file_name)
+    flag_hdu = fits.ImageHDU(good_flag)
+    hdul = fits.HDUList([hdu, flag_hdu])
+    hdul.writeto(contspac_file_name)
