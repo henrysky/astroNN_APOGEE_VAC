@@ -8,6 +8,13 @@ from astroquery.gaia import Gaia
 from config import allstar_path, gaia_allcolumns_f, gaia_rowmatch_f, gaia_table_name
 from utils import dr2source_dr3source
 
+try:
+       from zero_point import zpt
+       zpt.load_tables()
+       ZPT = True
+except ImportError:
+       ZPT = False
+
 # open apogee allstar
 allstar_data = fits.getdata(allstar_path)
 ra_apogee = allstar_data['ra']
@@ -122,6 +129,20 @@ ipd_gof_harmonic_amplitude[gaia_matched_idx] = xmatched_allcolumns['ipd_gof_harm
 ipd_frac_multi_peak[gaia_matched_idx] = xmatched_allcolumns['ipd_frac_multi_peak']
 phot_bp_rp_excess_factor[gaia_matched_idx] = xmatched_allcolumns['ipd_frac_multi_peak']
 
+if ZPT:
+       good_idx = np.where(((astrometric_params_solved==31) | (astrometric_params_solved==95)) & 
+                           (phot_g_mean_mag<21) & (6<phot_g_mean_mag))[0]
+       zp = zpt.get_zpt(phot_g_mean_mag[good_idx], 
+                        nu_eff_used_in_astrometry[good_idx], 
+                        pseudocolour[good_idx], 
+                        ecl_lat[good_idx], 
+                        astrometric_params_solved[good_idx])
+       # use median zero-point for all stars by default
+       zp_row_matched = np.ones(len(ra)) * np.median(zp)
+
+       zp_row_matched[good_idx] = zp
+
+
 col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
        fits.Column(name='LOCATION_ID', array=allstar_data['LOCATION_ID'], format="J"),
        fits.Column(name='RA_APOGEE', array=allstar_data['RA'], format='D'),
@@ -165,6 +186,10 @@ col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18
        fits.Column(name='ipd_gof_harmonic_amplitude', array=ipd_gof_harmonic_amplitude, format='D'),
        fits.Column(name='ipd_frac_multi_peak', array=ipd_frac_multi_peak, format='D'),
        fits.Column(name='phot_bp_rp_excess_factor', array=phot_bp_rp_excess_factor, format='D')]
+
+if ZPT:  # official gaia zero-point
+       col.append(fits.Column(name='parallax_w_zp', array=parallax-zp_row_matched, format='D'))
+
 
 t = fits.BinTableHDU.from_columns(col)
 t.writeto(gaia_rowmatch_f)

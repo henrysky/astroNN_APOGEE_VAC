@@ -55,7 +55,7 @@ t.writeto(astronn_chem_f)
 
 corrected_K = extinction_correction(allstar_data['K'], allstar_data['AK_TARG'])
 
-# cross matched APOGEE-Gaia DR2
+# cross matched APOGEE-Gaia
 apogeegaia_file = fits.getdata(gaia_rowmatch_f)
 # add the offset we found for inv var weighting parallax
 parallax = apogeegaia_file["parallax"] + 0.052
