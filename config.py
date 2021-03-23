@@ -24,7 +24,7 @@ corr_flag = True
 
 # path to your current allstar
 # allstar_path = "/yngve_data/sdss/apogee/apogeework/apogee/spectro/aspcap/r13/l33/allStar-r13-l33-58932beta.fits"
-allstar_path = "allStar-r13-l33-58932beta.fits"  # path on my windows
+allstar_path = allstar(dr=17)  # path on my windows
 
 # base path to apStar/asStar files
 base_path = "/yngve_data/sdss/apogee/dr16/apogee/spectro/redux/r12/stars"

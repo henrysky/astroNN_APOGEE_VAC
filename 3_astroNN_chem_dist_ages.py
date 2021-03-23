@@ -58,7 +58,11 @@ corrected_K = extinction_correction(allstar_data['K'], allstar_data['AK_TARG'])
 # cross matched APOGEE-Gaia
 apogeegaia_file = fits.getdata(gaia_rowmatch_f)
 # add the offset we found for inv var weighting parallax
-parallax = apogeegaia_file["parallax"] + 0.052
+try:
+    parallax = apogeegaia_file["parallax_w_zp"]
+except KeyError:
+    parallax = apogeegaia_file["parallax"]
+
 parallax_error = apogeegaia_file["parallax_error"]
 
 # set negative parallax after constant offset correction to np.nan
