@@ -7,7 +7,7 @@ from astropy.io import fits
 from astroNN.apogee.chips import apogee_continuum
 from gaia_tools.xmatch import xmatch
 
-from config import allstar_path, allstar14_path, base_path, contspac_file_name, corr_flag, contspac14_file_name
+from config import allstar_path, base_path, contspac_file_name, corr_flag
 
 if os.path.exists(contspac_file_name):
     raise FileExistsError(f"{contspac_file_name} already existed")
@@ -31,21 +31,19 @@ for counter in tqdm.tqdm(range(0, total_num)):
     if allstar_data['LOCATION_ID'][counter] == 1:
         continue
     ap_path = f"{base_path}/{allstar_data['TELESCOPE'][counter]}/{allstar_data['FIELD'][counter]}/{allstar_data['FILE'][counter]}"
-    if os.path.exists(ap_path) is False:
+    if os.path.isfile(ap_path) is False:
         pass
     else:
         apstar_file = fits.open(ap_path)
         nvisits = apstar_file[0].header['NVISITS']
-        if nvisits == 1:
-            _spec = apstar_file[1].data
-            _spec_err = apstar_file[2].data
-            _spec_mask = apstar_file[3].data
-        else:
-            _spec = apstar_file[1].data[1]
-            _spec_err = apstar_file[2].data[1]
-            _spec_mask = apstar_file[3].data[1]
+        _spec = apstar_file[1].data[0]
+        _spec_err = apstar_file[2].data[0]
+        _spec_mask = apstar_file[3].data[0]
 
-        if not np.all(_spec == 0.):
+        if not np.all(_spec == 0.) and not np.all(np.isnan(_spec)):
+            _spec_err[np.isnan(_spec)] = 1e20
+            _spec_mask[np.isnan(_spec)] = 1
+            _spec[np.isnan(_spec)] = 1.
             _spec, _spec_err = apstar_normalization(_spec, _spec_err, _spec_mask)
             spec[counter] = _spec
             good_flag[counter] = 1
@@ -56,42 +54,25 @@ flag_hdu = fits.ImageHDU(good_flag)
 hdul = fits.HDUList([hdu, flag_hdu])
 hdul.writeto(contspac_file_name)
 
-if corr_flag:
-    allstar_dr14_data = fits.getdata(allstar14_path)
+good_flag = good_flag.astype(bool)
 
-    north_spec = np.where(allstar_data['TELESCOPE'] == 'apo25m')[0]
-    south_spec = np.where(allstar_data['TELESCOPE'] == 'lco25m')[0]
+if corr_flag:  # correct north-south
+    north_spec_idx = np.where(allstar_data['TELESCOPE'][good_flag] == 'apo25m')[0]
+    south_spec_idx = np.where(allstar_data['TELESCOPE'][good_flag] == 'lco25m')[0]
 
-    idx1, idx2, _ = xmatch(allstar_data[north_spec], allstar_dr14_data)
-    idx3, idx4, _ = xmatch(allstar_data[north_spec], allstar_data[south_spec])
+    idx1, idx2, _ = xmatch(allstar_data[good_flag][north_spec_idx], allstar_data[good_flag][south_spec_idx])
 
-    dr14_spec = fits.getdata(contspac14_file_name)
+    spec = fits.getdata(contspac_file_name)
 
-    apo16_apo14_mediff = np.median(spec[north_spec][idx1] - dr14_spec[idx2], axis=0)
-    lco16_apo14_mediff = np.median(spec[south_spec][idx4] - spec[north_spec][idx3], axis=0) + apo16_apo14_mediff
-    np.save("apo16_apo14_median_dr17.npy", apo16_apo14_mediff)
-    np.save("lco16_apo14_median_dr17.npy", lco16_apo14_mediff)
+    lco_apo_mediff = np.median(spec[good_flag][south_spec_idx][idx2] - spec[good_flag][north_spec_idx][idx1], axis=0)
+    np.save("lco_apo_median_dr17sync.npy", lco_apo_mediff)
 
-    for counter in tqdm.tqdm(range(0, total_num)):
-        if not np.all(spec[counter] == 0.):
-            telescope = allstar_data['TELESCOPE'][counter]
-
-            if telescope == 'lco25m':
-                corr = np.array(lco16_apo14_mediff)
-            elif telescope == 'apo25m':
-                corr = np.array(apo16_apo14_mediff)
-            else:
-                corr = np.zeros_like(spec[0])
-
-            masked = (spec[counter] == 1.)
-
-            spec[counter] = spec[counter] - corr
-            spec[counter][masked] = 1.
+    spec[good_flag][south_spec_idx] -= lco_apo_mediff
 
     os.rename(contspac_file_name, "{0}_{2}{1}".format(*os.path.splitext(contspac_file_name) + ("uncorrected",)))
 
     # save a fits
     hdu = fits.PrimaryHDU(spec)
-    flag_hdu = fits.ImageHDU(good_flag)
+    flag_hdu = fits.ImageHDU(good_flag.astype(int))
     hdul = fits.HDUList([hdu, flag_hdu])
     hdul.writeto(contspac_file_name)
