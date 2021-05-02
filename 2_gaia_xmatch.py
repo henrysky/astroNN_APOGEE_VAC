@@ -18,7 +18,8 @@ except ImportError:
 # open apogee allstar
 allstar_data = fits.getdata(allstar_path)
 ra_apogee = allstar_data['ra']
-dr3_source_id = dr2source_dr3source(allstar_data['GAIA_SOURCE_ID'])
+# dr3_source_id = dr2source_dr3source(allstar_data['GAIAEDR3_SOURCE_ID'])
+dr3_source_id = allstar_data['GAIAEDR3_SOURCE_ID']
 
 gaia_matched_idx = np.where(dr3_source_id > 1)
 
@@ -73,7 +74,7 @@ pmdec_error = np.ones(ra_apogee.shape[0]) * np.nan
 phot_g_mean_mag = np.ones(ra_apogee.shape[0]) * np.nan
 bp_rp = np.ones(ra_apogee.shape[0]) * np.nan
 source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
-dr2_source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
+# dr2_source_id = np.zeros(ra_apogee.shape[0], dtype=np.int64) - 1
 # new in EDR3
 bp_g = np.ones(ra_apogee.shape[0]) * np.nan
 g_rp = np.ones(ra_apogee.shape[0]) * np.nan
@@ -114,8 +115,8 @@ pmdec_error[gaia_matched_idx] = xmatched_allcolumns['pmdec_error']
 phot_g_mean_mag[gaia_matched_idx] = xmatched_allcolumns['phot_g_mean_mag']
 bp_rp[gaia_matched_idx] = xmatched_allcolumns['bp_rp']
 source_id[gaia_matched_idx] = xmatched_allcolumns['source_id']
-dr2_source_id[allstar_data["GAIA_SOURCE_ID"] > 1] = \
-       allstar_data["GAIA_SOURCE_ID"][allstar_data["GAIA_SOURCE_ID"] > 1]
+# dr2_source_id[allstar_data["GAIA_SOURCE_ID"] > 1] = \
+#        allstar_data["GAIA_SOURCE_ID"][allstar_data["GAIA_SOURCE_ID"] > 1]
 # new in EDR3
 bp_g[gaia_matched_idx] = xmatched_allcolumns['bp_g']
 g_rp[gaia_matched_idx] = xmatched_allcolumns['g_rp']
@@ -176,7 +177,7 @@ col = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18
        fits.Column(name='bp_g', array=bp_g, format='D'),
        fits.Column(name='g_rp', array=g_rp, format='D'),
        fits.Column(name='source_id', array=source_id, format='K'),
-       fits.Column(name='dr2_source_id', array=allstar_data["GAIA_SOURCE_ID"], format='K'),
+       # fits.Column(name='dr2_source_id', array=allstar_data["GAIA_SOURCE_ID"], format='K'),
        fits.Column(name='pseudocolour', array=pseudocolour, format='D'),
        fits.Column(name='pseudocolour_error', array=pseudocolour_error, format='D'),
        fits.Column(name='nu_eff_used_in_astrometry', array=nu_eff_used_in_astrometry, format='D'),
