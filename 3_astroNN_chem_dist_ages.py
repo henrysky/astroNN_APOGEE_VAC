@@ -23,13 +23,13 @@ allstar_data = fits.getdata(allstar_path)
 
 allspec_f = fits.open(contspac_file_name)
 all_spec = allspec_f[0].data
-bad_spec_idx = np.all(all_spec == 0., axis=1)
+bad_spec_idx = ~np.array(allspec_f[1].data, bool)
 
 # ====================================== Abundances ====================================== #
 
 net = load_folder(astronn_chem_model)
 
-pred, pred_error = net.test(all_spec)
+pred, pred_error = net.predict_dataset(fits.getdata(contspac_file_name))
 
 # some spectra are all zeros, set prediction for those spectra to np.nan
 pred[bad_spec_idx] = np.nan
@@ -37,8 +37,8 @@ pred_error['total'][bad_spec_idx] = np.nan
 
 # deal with infinite error issue, set them to np.nan
 inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
-pred[inf_err_idx] = np.nan
-pred_error['total'][inf_err_idx] = np.nan
+pred[bad_spec_idx | inf_err_idx] = np.nan
+pred_error['total'][bad_spec_idx | inf_err_idx] = np.nan
 
 # save a fits
 columns_list = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
@@ -66,12 +66,13 @@ except KeyError:
 parallax_error = apogeegaia_file["parallax_error"]
 
 # set negative parallax after constant offset correction to np.nan
-parallax[(parallax < 0)] = np.nan
-parallax_error[(parallax < 0)] = np.nan
+parallax_error[(parallax < 0) & (parallax > 1e10)] = np.nan
+parallax[(parallax < 0) & (parallax > 1e10)] = np.nan
 
 # inference
 net = load_folder(astronn_dist_model)
-pred, pred_err = net.test(all_spec)
+# pred, pred_err = net.predict(all_spec)
+pred, pred_err = net.predict_dataset(fits.getdata(contspac_file_name))
 pred[:, 0][pred[:, 0] == 0.] = np.nan
 
 # unit conversion
@@ -89,7 +90,7 @@ nn_parallax_err = nn_parallax_err.value
 nn_parallax_model_err = nn_parallax_model_err.value
 
 # set bad value to np.nan
-bad_idx = np.all(all_spec == 0., axis=1) | (pred[:, 0] < 0.)
+bad_idx = (bad_spec_idx | (pred[:, 0] < 0.))
 nn_dist[bad_idx] = np.nan
 nn_dist_err[bad_idx] = np.nan
 nn_dist_model_err[bad_idx] = np.nan
@@ -161,31 +162,31 @@ t.writeto(astronn_dist_f)
 
 # ====================================== Ages ====================================== #
 
+# APOKASC processing
+apokasc3 = fits.getdata("APOKASC_cat_v6.6.1.fits.zip")
+good_ages = (apokasc3["APOKASC2_AGE"] != -9999.)
+apokasc3 = apokasc3[good_ages]
+
+idx = []
+for aid in np.array(apokasc3['2MASS_ID']):
+    idx.append(int(np.where(allstar_data['APOGEE_ID'] == aid)[0][0]))
+
 net = load_folder(astronn_age_model)
 
-pred, pred_error = net.test(all_spec)
+pred, pred_error = net.predict_dataset(fits.getdata(contspac_file_name))
 
 # some spectra are all zeros, set prediction for those spectra to NaN
-pred[np.all(all_spec == 0., axis=1)] = np.nan
-pred_error['total'][np.all(all_spec == 0., axis=1)] = np.nan
-pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
+pred[bad_spec_idx] = np.nan
+pred_error['total'][bad_spec_idx] = np.nan
+pred_error['model'][bad_spec_idx] = np.nan
 
 # deal with infinite error issue if it exists, set them to NaN
 inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
-pred[inf_err_idx] = np.nan
-pred_error['total'][inf_err_idx] = np.nan
-pred_error['model'][np.all(all_spec == 0., axis=1)] = np.nan
+pred[bad_spec_idx | inf_err_idx] = np.nan
+pred_error['total'][bad_spec_idx | inf_err_idx] = np.nan
+pred_error['model'][bad_spec_idx | inf_err_idx] = np.nan
 
-f_apokasc2 = h5py.File("APOKASC2.h5", 'r')
-
-idx = []
-for aid in np.array(f_apokasc2['APOGEE_ID']):
-    try:
-        idx.append(int(np.where(allstar_data['APOGEE_ID'] == aid.decode())[0][0]))
-    except IndexError:
-        idx.append(0)
-
-out = lowess(np.array(f_apokasc2['Age']), pred[:, -1][idx], frac=0.8, delta=0.1)
+out = lowess(np.array(apokasc3['APOKASC2_AGE']), pred[:, -1][idx], frac=0.8, delta=0.1)
 correction = interp1d(out[:,0], out[:,1], bounds_error=False, fill_value='extrapolate')
 
 columns_list = [fits.Column(name='apogee_id', array=allstar_data['APOGEE_ID'], format="18A"),
