@@ -1,6 +1,7 @@
 # This script uses all the fits files we have generated and compile VAC
 
 import os
+import numpy as np
 from astropy.io import fits
 
 from config import allstar_path, gaia_rowmatch_f, astronn_chem_f, astronn_dist_f, galpy_orbitparams_f, \
@@ -81,7 +82,7 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='pmra', array=f_gaia['pmra'], format='D'),
      fits.Column(name='pmra_error', array=f_gaia['pmra_error'], format='D'),
      fits.Column(name='ref_epoch', array=f_gaia['ref_epoch'], format='D'),  # new in DR3
-     fits.Column(name='dr2_source_id', array=f_gaia['dr2_source_id'], format='K'),  # new in DR3
+    #  fits.Column(name='dr2_source_id', array=f_gaia['dr2_source_id'], format='K'),  # new in DR3
      fits.Column(name='pmdec', array=f_gaia['pmdec'], format='D'),
      fits.Column(name='pmdec_error', array=f_gaia['pmdec_error'], format='D'),
      fits.Column(name='phot_g_mean_mag', array=f_gaia['phot_g_mean_mag'], format='D'),
@@ -153,6 +154,14 @@ c = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"
      fits.Column(name='Energy_err', array=f_orbitparams['Energy_err'], format='D'),
      fits.Column(name='EminusEc', array=f_orbitparams['EminusEc'], format='D'),
      fits.Column(name='EminusEc_err', array=f_orbitparams['EminusEc_err'], format='D')]
+
+for ci in c:
+    try:
+        assert np.all(ci.array!=-9999.)
+    except TypeError:
+        pass
+    except AssertionError:
+        print(ci)
 
 # save a fits
 t = fits.BinTableHDU.from_columns(c)

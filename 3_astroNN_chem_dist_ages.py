@@ -37,8 +37,10 @@ pred_error['total'][bad_spec_idx] = np.nan
 
 # deal with infinite error issue, set them to np.nan
 inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
-pred[bad_spec_idx | inf_err_idx] = np.nan
-pred_error['total'][bad_spec_idx | inf_err_idx] = np.nan
+pred[inf_err_idx] = np.nan
+pred[bad_spec_idx] = np.nan
+pred_error['total'][inf_err_idx] = np.nan
+pred_error['total'][bad_spec_idx] = np.nan
 
 # save a fits
 columns_list = [fits.Column(name='APOGEE_ID', array=allstar_data['APOGEE_ID'], format="18A"),
@@ -90,7 +92,7 @@ nn_parallax_err = nn_parallax_err.value
 nn_parallax_model_err = nn_parallax_model_err.value
 
 # set bad value to np.nan
-bad_idx = (bad_spec_idx | (pred[:, 0] < 0.))
+bad_idx = (bad_spec_idx | (pred[:, 0] < 0.) | (nn_dist == -9999.) | np.isnan(nn_dist))
 nn_dist[bad_idx] = np.nan
 nn_dist_err[bad_idx] = np.nan
 nn_dist_model_err[bad_idx] = np.nan
@@ -182,9 +184,9 @@ pred_error['model'][bad_spec_idx] = np.nan
 
 # deal with infinite error issue if it exists, set them to NaN
 inf_err_idx = np.array([pred_error['total'] == np.inf])[0]
-pred[bad_spec_idx | inf_err_idx] = np.nan
-pred_error['total'][bad_spec_idx | inf_err_idx] = np.nan
-pred_error['model'][bad_spec_idx | inf_err_idx] = np.nan
+pred[ inf_err_idx] = np.nan
+pred_error['total'][inf_err_idx] = np.nan
+pred_error['model'][inf_err_idx] = np.nan
 
 out = lowess(np.array(apokasc3['APOKASC2_AGE']), pred[:, -1][idx], frac=0.8, delta=0.1)
 correction = interp1d(out[:,0], out[:,1], bounds_error=False, fill_value='extrapolate')
