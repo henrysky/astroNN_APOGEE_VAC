@@ -21,10 +21,13 @@ Please review the configurations stored in the following following files before 
     | Gaia login if you have any
 -   | `utils.py`_
     | Contains a few useful utility functions
+-   | `aspcap_norm.py`_
+    | A simple script to retrieve all ASPCAP normalized spectra and save to a single file
 
 .. _config.py: config.py
 .. _gaia_credential: gaia_credential
 .. _utils.py: utils.py
+.. _aspcap_norm.py: aspcap_norm.py
 
 Please run the scripts in ASCENDING ORDER
 
@@ -50,6 +53,12 @@ Please run the scripts in ASCENDING ORDER
 .. _4_orbital_parameters.py: 4_orbital_parameters.py
 .. _5_compile_vac.py: 5_compile_vac.py
 .. _6_diagnostic_plots.py: 6_diagnostic_plots.py
+
+External Data
+---------------
+
+- ``APOKASC_cat_v6.6.1.fits.zip``: https://trac.sdss.org/attachment/wiki/APOGEE2/APOKASC/Catalog/APOKASC_cat_v6.6.1.fits.zip
+- ``kepler_low_metallicity_with_samples.fits``: Internal use only
 
 Major Authors
 ---------------
