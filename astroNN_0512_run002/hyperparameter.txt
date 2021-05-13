@@ -1,0 +1,19 @@
+Model: Bayesian Convolutional Neural Network 
+Model Type: BCNN 
+astroNN identifier: ApogeeBCNNCensored 
+Python Version: 3.9.2 | packaged by conda-forge | (default, Feb 21 2021, 05:02:46) 
+[GCC 9.3.0] 
+astroNN Version: 1.1.dev0 
+Keras Version: 2.5.0 
+Tensorflow Version: 2.5.0-rc3 
+Folder Name: astroNN_0512_run002 
+Batch size: 256 
+Optimizer: Adam 
+Maximum Epochs: 60 
+Learning Rate: 0.0005 
+Validation Size: 0.1 
+Input Shape: {'input': (7514, 1), 'input_err': (7514, 1), 'labels_err': (22, 1)} 
+Label Shape: {'output': 22, 'variance_output': 22} 
+Number of Training Data: 86211 
+Number of Validation Data: 9579 
+Dropout Rate: 0.3 
