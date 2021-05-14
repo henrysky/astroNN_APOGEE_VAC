@@ -11,7 +11,7 @@ Requirement
 
 ``python>=3.6``, ``numpy``, ``scipy``, ``astropy``, ``astroquery``, ``galpy``, ``astroNN``, ``pyyaml``, ``statsmodels``, ``h5py``, ``gaia_tools``
 
-``zero_point``: https://gitlab.com/icc-ub/public/gaiadr3_zeropoint
+``zero_point`` are required to correct Gaia zeropoint: https://gitlab.com/icc-ub/public/gaiadr3_zeropoint
 
 Scripts
 ---------
@@ -63,12 +63,19 @@ External Data
 - ``APOKASC_cat_v6.6.1.fits.zip``: https://trac.sdss.org/attachment/wiki/APOGEE2/APOKASC/Catalog/APOKASC_cat_v6.6.1.fits.zip
 - ``kepler_low_metallicity_with_samples.fits``: Internal use only
 
+DR16 VAC
+----------
+
+The folder ``astroNN_0617_run001``, ``astroNN_constant_model_reduced``, ``APOKASC2_BCNN_age_only_corrections0.1`` are original neural network models used in DR16 VAC
+
 DR17 VAC
 ----------
 
 We have retrained our models for DR17 VAC, the training scripts and sanity checks notebook are under the folder ``dr17-VAC-notebooks``
 
 The folder ``astroNN_0512_run002``, ``astroNN_gaia_dr17_model_3``, ``APOKASC2_BCNN_age_combined_dr17_4`` are new neural network models used in DR17 VAC
+
+``lco_apo_median_dr17sync.npy`` is the clculated median difference between apo25m and lco25m
 
 Major Authors
 ---------------
