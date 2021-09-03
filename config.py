@@ -4,7 +4,7 @@ from astroNN.apogee import allstar
 
 # milkyway potential parameters
 _R0 = 8.125  # distance to galactic center in kpc
-_v0 = 220.  # sun tangential velocity in km/x
+_v0 = 242.  # sun tangential velocity in km/x
 _z0 = 0.0208  # sun above galactic plane in kpc
 
 # gaia table to use to cross matching

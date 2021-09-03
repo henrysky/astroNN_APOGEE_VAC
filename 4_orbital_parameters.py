@@ -6,7 +6,7 @@ import numpy as np
 import multiprocessing
 from astropy.io import fits
 from galpy.orbit import Orbit
-from galpy.util import bovy_conversion
+from galpy.util import conversion
 from galpy.actionAngle import actionAngleStaeckel, estimateDeltaStaeckel
 from galpy.potential import MWPotential2014, evaluatePotentials, rl
 
@@ -20,7 +20,7 @@ f_gaia = fits.getdata(gaia_rowmatch_f)
 f_dist = fits.getdata(astronn_dist_f)
 f_astronn = fits.getdata(astronn_dist_f)
 
-_freq = bovy_conversion.freq_in_Gyr(_v0, _R0)
+_freq = conversion.freq_in_Gyr(_v0, _R0)
 
 # extract gaia info
 source_ids = f_gaia['source_id']
