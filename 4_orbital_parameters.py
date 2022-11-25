@@ -202,7 +202,7 @@ def process_single(i):
            galphi, \
            np.nanmean(sRpz[:, 2]) * _R0, \
            np.nanmean(svRvTvz[:, 0]) * _v0, \
-           np.nanmean(svRvTvz[0, 1]) * _v0, \
+           np.nanmean(svRvTvz[:, 1]) * _v0, \
            np.nanmean(svRvTvz[:, 2]) * _v0, \
            galr_err * _R0, \
            galphi_err, \
